@@ -1,0 +1,53 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.3">
+  <diagram name="Страница — 1" id="jLnOedMRefn1-FSvZcaY">
+    <mxGraphModel dx="1426" dy="785" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="tPMKSkmJaqnPC8uWyhRr-1" target="tPMKSkmJaqnPC8uWyhRr-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="370" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-1" value="Ввод строки и разделение на отдельные слова, удаления запятых и точек" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="170" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tPMKSkmJaqnPC8uWyhRr-3" target="tPMKSkmJaqnPC8uWyhRr-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-3" value="Поиск в словаре/ поиск по готовой лемме + индексам" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="290" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="tPMKSkmJaqnPC8uWyhRr-4" target="tPMKSkmJaqnPC8uWyhRr-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-4" value="&quot;Индексация&quot; слов по роду, числу и тд" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="420" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-6" value="Слово" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="370" y="238" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-7" value="Леммы" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="370" y="370" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="tPMKSkmJaqnPC8uWyhRr-8" target="tPMKSkmJaqnPC8uWyhRr-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="150" y="585" />
+              <mxPoint x="150" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-8" value="Сравнение по индексам и подгонка под них" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="555" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-11" value="индексы слов" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="370" y="500" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tPMKSkmJaqnPC8uWyhRr-12" value="изменённые индексы слов" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="70" y="585" width="170" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
