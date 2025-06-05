@@ -58,6 +58,15 @@
         <mxCell id="iwDVzfNXNj2g2RUYvlDA-3" value="если подходят" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="370" y="640" width="100" height="30" as="geometry" />
         </mxCell>
+        <mxCell id="yrZKxFpwJ9V6xFAHWGAz-1" value="изменить порядок по словам, сделать комбинации вариаций&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="600" y="370" width="360" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="yrZKxFpwJ9V6xFAHWGAz-2" value="внедрить функцию подбора модификатора&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="620" y="473" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yrZKxFpwJ9V6xFAHWGAz-3" value="разбить функцию подбора свойств по частям речи" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="575" y="598" width="310" height="30" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
