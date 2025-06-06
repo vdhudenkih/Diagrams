@@ -9,3 +9,59 @@
 на выходе функция должна давать последовательность, например, для строки-примера 1: 142031-NOUN-femn-nomn
 для строки-примера 2: 141888-ADJF-masc-nomn
 для строки-примера 3: 142026-GRND-0000-0000
+
+
+
+
+
+
+using System;
+using System.Text.RegularExpressions;
+
+public class Program
+{
+    public static void Main()
+    {
+        string input1 = "<lemma id=\"142031\" rev=\"142031\"><l t=\"красота\"><g v=\"NOUN\"/><g v=\"inan\"/><g v=\"femn\"/></l><f t=\"красота\"><g v=\"sing\"/><g v=\"nomn\"/></f>...</lemma>";
+        string input2 = "<lemma id=\"141888\" rev=\"141888\"><l t=\"красноломкий\"><g v=\"ADJF\"/></l><f t=\"красноломкий\"><g v=\"masc\"/><g v=\"sing\"/><g v=\"nomn\"/></f>...</lemma>";
+        string input3 = "<lemma id=\"142026\" rev=\"142026\"><l t=\"красуясь\"><g v=\"GRND\"/><g v=\"impf\"/><g v=\"intr\"/></l><f t=\"красуясь\"><g v=\"pres\"/></f>...</lemma>";
+
+        Console.WriteLine(LemmaPropertySearch(input1));
+        Console.WriteLine(LemmaPropertySearch(input2));
+        Console.WriteLine(LemmaPropertySearch(input3));
+    }
+
+    public static string LemmaPropertySearch(string lemmaXml)
+    {
+        // Регулярные выражения для извлечения нужных данных
+        var idMatch = Regex.Match(lemmaXml, @"id=""(\d+)""");
+        var gMatch = Regex.Match(lemmaXml, @"<l t=""[^""]*""><g v=""([^""]+)""");
+        var fMatch = Regex.Match(lemmaXml, @"<f t=""[^""]*""><g v=""([^""]+)""");
+
+        if (idMatch.Success && gMatch.Success && fMatch.Success)
+        {
+            string id = idMatch.Groups[1].Value;
+            string lemmaType = gMatch.Groups[1].Value;
+            string gender = fMatch.Groups[1].Value;
+
+            // Получаем дополнительные значения для вывода
+            var additionalMatch = Regex.Matches(lemmaXml, @"<f t=""[^""]*""><g v=""([^""]+)""");
+            string number = "0000"; // по умолчанию
+            string caseValue = "0000"; // по умолчанию
+
+            if (additionalMatch.Count > 1)
+            {
+                number = additionalMatch[1].Groups[1].Value; // берем второе значение
+                if (additionalMatch.Count > 2)
+                {
+                    caseValue = additionalMatch[2].Groups[1].Value; // берем третье значение
+                }
+            }
+
+            return $"{id}-{lemmaType}-{gender}-{number}-{caseValue}";
+        }
+
+        return null; // или можно вернуть строку с ошибкой
+    }
+}
+
