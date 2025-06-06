@@ -36,3 +36,69 @@ public string wordCase;
 
 дополни программу:
 теперь она должна аналогично выводить признаки sing/plur 
+
+
+
+
+using System;
+using System.Linq;
+using System.Xml.Linq;
+
+public class Program
+{
+    public static void Main()
+    {
+        string input = @"<lemma id=""96662"" rev=""96662""><l t=""жена""><g v=""NOUN""/><g v=""anim""/><g v=""femn""/></l><f t=""жена""><g v=""sing""/><g v=""nomn""/></f><f t=""жены""><g v=""sing""/><g v=""gent""/></f></lemma>";
+        
+        string result = LemmaPropertySearch(input);
+        Console.WriteLine(result);  // Ожидается: 96662-NOUN-femn-sing-nomn
+    }
+
+    public static string LemmaPropertySearch(string lemmaXml)
+    {
+        try
+        {
+            var xdoc = XDocument.Parse(lemmaXml);
+            var lemma = xdoc.Element("lemma");
+            if (lemma == null)
+                return null;
+
+            string id = lemma.Attribute("id")?.Value ?? "0000";
+
+            var l = lemma.Element("l");
+            if (l == null)
+                return null;
+
+            // Часть речи — первый <g v="..."/> внутри <l>
+            string pos = l.Elements("g").FirstOrDefault()?.Attribute("v")?.Value ?? "0000";
+
+            // Род из <l> — masc, femn, neut
+            string genderFromL = l.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? "0000";
+
+            // Берём первый <f> — первую форму
+            var firstF = lemma.Elements("f").FirstOrDefault();
+            if (firstF == null)
+                return $"{id}-{pos}-{genderFromL}-0000-0000";
+
+            var gValuesF = firstF.Elements("g").Select(g => g.Attribute("v")?.Value).ToList();
+
+            // Род из <f>, если есть, иначе из <l>
+            string gender = gValuesF.FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? genderFromL;
+
+            // Падеж — nomn, gent, datv, accs, ablt, loct
+            string[] cases = { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+            string caseVal = gValuesF.FirstOrDefault(v => cases.Contains(v)) ?? "0000";
+
+            // Число — sing или plur
+            string number = gValuesF.FirstOrDefault(v => v == "sing" || v == "plur") ?? "0000";
+
+            return $"{id}-{pos}-{gender}-{number}-{caseVal}";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
