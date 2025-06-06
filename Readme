@@ -68,3 +68,71 @@ public class Program
 программа дает некорректный вывод:
 при вводе <lemma id="267588" rev="267588"><l t="прекрасный"><g v="ADJF"/><g v="Qual"/></l><f t="прекрасный"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="прекрасного"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="прекрасному"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="прекрасного"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="прекрасный"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="прекрасным"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="прекрасном"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="прекрасная"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="прекрасной"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="прекрасной"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="прекрасную"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="прекрасной"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="прекрасною"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="прекрасной"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="прекрасное"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="прекрасного"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="прекрасному"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="прекрасное"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="прекрасным"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="прекрасном"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="прекрасные"><g v="plur"/><g v="nomn"/></f><f t="прекрасных"><g v="plur"/><g v="gent"/></f><f t="прекрасным"><g v="plur"/><g v="datv"/></f><f t="прекрасных"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="прекрасные"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="прекрасными"><g v="plur"/><g v="ablt"/></f><f t="прекрасных"><g v="plur"/><g v="loct"/></f></lemma>
 на выход получаем 267588-ADJF-masc-masc, хотя должны 267588-ADJF-masc-nomn
+
+
+
+
+
+
+using System;
+using System.Linq;
+using System.Xml.Linq;
+
+public class Program
+{
+    public static void Main()
+    {
+        string input = @"<lemma id=""267588"" rev=""267588""><l t=""прекрасный""><g v=""ADJF""/><g v=""Qual""/></l><f t=""прекрасный""><g v=""masc""/><g v=""sing""/><g v=""nomn""/></f><f t=""прекрасного""><g v=""masc""/><g v=""sing""/><g v=""gent""/></f></lemma>";
+
+        string result = LemmaPropertySearch(input);
+        Console.WriteLine(result);  // Ожидается: 267588-ADJF-masc-nomn
+    }
+
+    public static string LemmaPropertySearch(string lemmaXml)
+    {
+        try
+        {
+            var xdoc = XDocument.Parse(lemmaXml);
+            var lemma = xdoc.Element("lemma");
+            if (lemma == null)
+                return null;
+
+            string id = lemma.Attribute("id")?.Value ?? "0000";
+
+            var l = lemma.Element("l");
+            if (l == null)
+                return null;
+
+            // Часть речи — первый <g v="..."/> внутри <l>
+            string pos = l.Elements("g").FirstOrDefault()?.Attribute("v")?.Value ?? "0000";
+
+            // Берём первый <f> — первую форму
+            var firstF = lemma.Elements("f").FirstOrDefault();
+            if (firstF == null)
+                return $"{id}-{pos}-0000-0000";
+
+            // Из <f> ищем род (gender), число (number) и падеж (case)
+            // Род — masc, femn, neut
+            string gender = firstF.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? "0000";
+
+            // Число — sing или plur
+            string number = firstF.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .FirstOrDefault(v => v == "sing" || v == "plur") ?? "0000";
+
+            // Падеж — nomn, gent, datv, accs, ablt, loct
+            string[] cases = { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+            string caseVal = firstF.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .FirstOrDefault(v => cases.Contains(v)) ?? "0000";
+
+            return $"{id}-{pos}-{gender}-{caseVal}";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
