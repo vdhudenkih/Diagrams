@@ -9,6 +9,132 @@ public class WordProcessor
         if (words == null || words.Count == 0)
             return;
 
+        // Список предлогов для проверки
+        var prepositions = new HashSet<string> { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+
+        // Получаем все существительные
+        var nouns = words.Where(w => w.partOfSpeech == "NOUN").ToList();
+        // Проверяем наличие предлогов
+        bool containsPreposition = words.Any(w => prepositions.Contains(w.wordText));
+
+        if (!containsPreposition && nouns.Any())
+        {
+            if (nouns.Count == 1)
+            {
+                // Если только одно существительное
+                var noun = nouns.First();
+                foreach (var w in words)
+                {
+                    if (w.partOfSpeech == "ADJF")
+                    {
+                        w.wordKind = noun.wordKind; // Изменяем wordKind
+                        w.wordCase = noun.wordCase; // Изменяем wordCase
+                        w.singPlur = noun.singPlur; // Изменяем singPlur
+                    }
+                }
+            }
+            else
+            {
+                // Если существительных больше одного
+                var adjs = words.Where(w => w.partOfSpeech == "ADJF").ToList();
+                var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+                bool firstWordIsSpecial = firstWord != null && 
+                    (firstWord.wordText == "набор" || firstWord.wordText == "комплект" || firstWord.wordText == "каталог" || firstWord.wordText == "блок");
+
+                if (!adjs.Any())
+                {
+                    // Если нет прилагательных
+                    if (firstWord == null || !firstWordIsSpecial)
+                    {
+                        // Если первое слово не специальное, изменяем wordCase на "gent" для всех, кроме первого
+                        foreach (var w in words)
+                        {
+                            if (w.wordOrder != 0)
+                            {
+                                w.wordCase = "gent"; // Изменяем только wordCase
+                                w.singPlur = "plur"; // Можно установить по умолчанию
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Если первое слово специальное
+                        foreach (var w in words)
+                        {
+                            if (w.wordOrder != 0)
+                            {
+                                w.wordKind = "masc"; // Устанавливаем wordKind
+                                w.wordCase = "gent"; // Устанавливаем wordCase
+                                w.singPlur = "plur"; // Устанавливаем singPlur
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Если есть прилагательные
+                    if (firstWordIsSpecial)
+                    {
+                        // Если первое слово специальное
+                        foreach (var w in words)
+                        {
+                            if (w.wordOrder != 0)
+                            {
+                                w.wordKind = "masc"; // Устанавливаем wordKind
+                                w.wordCase = "gent"; // Устанавливаем wordCase
+                                w.singPlur = "plur"; // Устанавливаем singPlur
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Если первое слово не специальное
+                        if (firstWord != null)
+                        {
+                            foreach (var w in words)
+                            {
+                                if (w.wordOrder != 0)
+                                {
+                                    // Изменяем параметры на основе первого слова
+                                    w.wordKind = firstWord.wordKind;
+                                    w.wordCase = firstWord.wordCase;
+                                    w.singPlur = firstWord.singPlur;
+                                }
+                            }
+
+                            // Изменяем wordCase на "gent" для всех, кроме первого
+                            foreach (var w in words)
+                            {
+                                if (w.wordOrder != 0)
+                                {
+                                    w.wordCase = "gent"; // Изменяем только wordCase
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class WordProcessor
+{
+    public static void ProcessWords(List<Word> words)
+    {
+        if (words == null || words.Count == 0)
+            return;
+
         var prepositions = new HashSet<string> { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
 
         var nouns = words.Where(w => w.partOfSpeech == "NOUN").ToList();
