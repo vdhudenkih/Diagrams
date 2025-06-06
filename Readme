@@ -1,3 +1,98 @@
+public static void ModifyWords(List<Word> words)
+{
+    // Проверяем наличие NOUN и ADJF
+    bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
+    bool hasAdjf = words.Any(w => w.partOfSpeech == "ADJF");
+
+    // Проверяем наличие предлогов
+    string[] prepositions = { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+    bool hasPreposition = words.Any(w => prepositions.Contains(w.wordText));
+
+    // Находим объект с wordOrder==0
+    var wordOrderZero = words.FirstOrDefault(w => w.wordOrder == 0);
+
+    if (!hasPreposition)
+    {
+        if (!hasNoun)
+        {
+            // Если нет NOUN, то изменить wordKind и wordCase у ADJF на значения из NOUN
+            // Но NOUN нет, значит логика непонятна — оставим без изменений или можно задать дефолт
+            return;
+        }
+        else
+        {
+            if (!hasAdjf)
+            {
+                if (wordOrderZero != null && !(wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
+                                                  wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
+                {
+                    // Изменить wordCase всех объектов, кроме wordOrder==0, на "gent"
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordCase = "gent";
+                    }
+                }
+                else
+                {
+                    // Изменить параметры у всех кроме wordOrder==0:
+                    // для NOUN: wordKind="masc", wordCase="gent", singPlur="plur"
+                    // для ADJF: wordKind="masc", wordCase="gent", singPlur="sing"
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        if (w.partOfSpeech == "NOUN")
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "plur";
+                        }
+                        else if (w.partOfSpeech == "ADJF")
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "sing";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (wordOrderZero != null && (wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
+                                              wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
+                {
+                    // Изменить параметры (wordKind, wordCase, singPlur) всех кроме wordOrder==0 на masc/gent/plur
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordKind = "masc";
+                        w.wordCase = "gent";
+                        w.singPlur = "plur";
+                    }
+                }
+                else
+                {
+                    // Изменить параметры всех кроме wordOrder==0 на значения wordOrderZero
+                    // а затем изменить wordCase всех кроме wordOrder==0 на "gent"
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordKind = wordOrderZero.wordKind;
+                        w.singPlur = wordOrderZero.singPlur;
+                        w.wordCase = "gent"; // Устанавливаем wordCase как "gent" для всех, кроме wordOrder==0
+                    }
+                }
+            }
+        }
+    }
+
+    // Если есть ADJF, устанавливаем wordCase как "gent" для них
+    foreach (var adjf in words.Where(w => w.partOfSpeech == "ADJF"))
+    {
+        adjf.wordCase = "gent"; // Устанавливаем wordCase как "gent"
+        adjf.singPlur = "sing"; // Устанавливаем singPlur для ADJF
+    }
+}
+
+
+
+
 ошибка в выводе:
 ожидалось:
 wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
