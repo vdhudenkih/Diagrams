@@ -1,3 +1,66 @@
 ошибка: привводе <lemma id="96662" rev="96662"><l t="жена"><g v="NOUN"/><g v="anim"/><g v="femn"/></l><f t="жена"><g v="sing"/><g v="nomn"/></f><f t="жены"><g v="sing"/><g v="gent"/></f><f t="жене"><g v="sing"/><g v="datv"/></f><f t="жену"><g v="sing"/><g v="accs"/></f><f t="женой"><g v="sing"/><g v="ablt"/></f><f t="женою"><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="жене"><g v="sing"/><g v="loct"/></f><f t="жёны"><g v="plur"/><g v="nomn"/></f><f t="жён"><g v="plur"/><g v="gent"/></f><f t="жёнам"><g v="plur"/><g v="datv"/></f><f t="жён"><g v="plur"/><g v="accs"/></f><f t="жёнами"><g v="plur"/><g v="ablt"/></f><f t="жёнах"><g v="plur"/><g v="loct"/></f></lemma>
 получено 96662-NOUN-0000-nomn 
 должно было быть 96662-NOUN-femn-nomn 
+
+
+
+using System;
+using System.Linq;
+using System.Xml.Linq;
+
+public class Program
+{
+    public static void Main()
+    {
+        string input = @"<lemma id=""96662"" rev=""96662""><l t=""жена""><g v=""NOUN""/><g v=""anim""/><g v=""femn""/></l><f t=""жена""><g v=""sing""/><g v=""nomn""/></f><f t=""жены""><g v=""sing""/><g v=""gent""/></f></lemma>";
+
+        string result = LemmaPropertySearch(input);
+        Console.WriteLine(result);  // Ожидается: 96662-NOUN-femn-nomn
+    }
+
+    public static string LemmaPropertySearch(string lemmaXml)
+    {
+        try
+        {
+            var xdoc = XDocument.Parse(lemmaXml);
+            var lemma = xdoc.Element("lemma");
+            if (lemma == null)
+                return null;
+
+            string id = lemma.Attribute("id")?.Value ?? "0000";
+
+            var l = lemma.Element("l");
+            if (l == null)
+                return null;
+
+            // Часть речи — первый <g v="..."/> внутри <l>
+            string pos = l.Elements("g").FirstOrDefault()?.Attribute("v")?.Value ?? "0000";
+
+            // Род из <l> — masc, femn, neut
+            string genderFromL = l.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? "0000";
+
+            // Берём первый <f> — первую форму
+            var firstF = lemma.Elements("f").FirstOrDefault();
+            if (firstF == null)
+                return $"{id}-{pos}-{genderFromL}-0000";
+
+            var gValuesF = firstF.Elements("g").Select(g => g.Attribute("v")?.Value).ToList();
+
+            // Род из <f>, если есть, иначе из <l>
+            string gender = gValuesF.FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? genderFromL;
+
+            // Падеж — nomn, gent, datv, accs, ablt, loct
+            string[] cases = { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+            string caseVal = gValuesF.FirstOrDefault(v => cases.Contains(v)) ?? "0000";
+
+            return $"{id}-{pos}-{gender}-{caseVal}";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
+
