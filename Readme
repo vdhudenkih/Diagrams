@@ -1,4 +1,5 @@
 напиши функцию на ЯП c# по следующему условию:
+на вход подаётся List<Word> words
 программа считывает все объекты класса Word с параметрами:
 public int wordOrder;
 public string wordText;
