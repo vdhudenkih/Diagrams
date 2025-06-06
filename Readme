@@ -84,95 +84,6 @@ public static string LemmaPropertySearch(string lemmaString)
 
 
 
-public static string LemmaPropertySearch(string lemmaString)
-{
-    var lemmaPattern = new Regex(@"<lemma\s+id=""(?<id>\d+)""[^>]*>.*?<l\s+t=""[^""]+"">(?<lContent>.*?)</l>.*?</lemma>", RegexOptions.Singleline);
-    var match = lemmaPattern.Match(lemmaString);
-    if (!match.Success)
-        return null;
-
-    string id = match.Groups["id"].Value;
-    
-    string lContent = match.Groups["lContent"].Value;
-
-    var gPattern = new Regex(@"<g\s+v=""(?<val>[^""]+)""\s*/>");
-    var gMatches = gPattern.Matches(lContent);
-
-    if (gMatches.Count == 0)
-        return null;
-
-    // Берём первый признак
-    string firstTag = gMatches[0].Groups["val"].Value;
-    // Разбиваем поиск по разным частям речи
-    if (firstTag == "NOUN")
-    {
-        // Определяем роды
-        HashSet<string> genders = new HashSet<string> { "masc", "femn", "neut" };
-
-        // Ищем род среди остальных признаков
-        string genderTag = null;
-        string caseTag = null;
-        for (int i = 1; i < gMatches.Count; i++)
-        {
-            string val = gMatches[i].Groups["val"].Value;
-            if (genders.Contains(val))
-            {
-                genderTag = val;
-            }
-            if (val == "nomn")
-            {
-                caseTag = val;
-            }
-        }
-
-        // Если род не найден, берём второй признак, если он есть
-        if (genderTag == null && gMatches.Count > 1)
-            genderTag = gMatches[1].Groups["val"].Value;
-
-        if (genderTag == null)
-            return $"{id}-{firstTag}";
-
-        return $"{id}-{firstTag}-{genderTag}-{caseTag}";
-    }
-    else if (firstTag == "ADJF")
-    {
-        // Обработка для прилагательных
-        string genderTag = null;
-        string caseTag = null;
-        for (int i = 1; i < gMatches.Count; i++)
-        {
-            string val = gMatches[i].Groups["val"].Value;
-            if (val == "masc" || val == "femn" || val == "neut")
-            {
-                genderTag = val;
-            }
-            if (val == "nomn")
-            {
-                caseTag = val;
-            }
-        }
-
-        if (genderTag == null)
-            return $"{id}-{firstTag}";
-
-        return $"{id}-{firstTag}-{genderTag}-{caseTag}";
-    }
-    else if (firstTag == "GRND")
-    {
-        // Обработка для герундия
-        return $"{id}-{firstTag}";
-    }
-    else
-    {
-        // Обработка для других частей речи
-        return $"{id}-{firstTag}";
-    }
-
-    return "это не существительное";
-}
-
-
-
 
 public static string LemmaPropertySearch(string lemmaString)
 {
@@ -231,3 +142,6 @@ public static string LemmaPropertySearch(string lemmaString)
     }
 }
 
+
+ошибка сохранилась, у строки <lemma id="141641" rev="141641"><l t="красивый"><g v="ADJF"/><g v="Qual"/></l><f t="красивый"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="красивого"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="красивому"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="красивого"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="красивый"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="красивым"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="красивом"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="красивая"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="красивую"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="красивою"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="красивое"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="красивого"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="красивому"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="красивое"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="красивым"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="красивом"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="красивые"><g v="plur"/><g v="nomn"/></f><f t="красивых"><g v="plur"/><g v="gent"/></f><f t="красивым"><g v="plur"/><g v="datv"/></f><f t="красивых"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="красивые"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="красивыми"><g v="plur"/><g v="ablt"/></f><f t="красивых"><g v="plur"/><g v="loct"/></f></lemma>
+не выводится падеж v="nomn"
