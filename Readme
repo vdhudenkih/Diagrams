@@ -1,1 +1,78 @@
-123
+существует функция:
+public static string LemmaPropertySearch(string lemmaString)
+    {
+        var lemmaPattern = new Regex(@"<lemma\s+id=""(?<id>\d+)""[^>]*>.*?<l\s+t=""[^""]+"">(?<lContent>.*?)</l>.*?</lemma>", RegexOptions.Singleline);
+        var match = lemmaPattern.Match(lemmaString);
+        if (!match.Success)
+            return null;
+
+        string id = match.Groups["id"].Value;
+        
+        string lContent = match.Groups["lContent"].Value;
+
+        var gPattern = new Regex(@"<g\s+v=""(?<val>[^""]+)""\s*/>");
+        var gMatches = gPattern.Matches(lContent);
+
+        if (gMatches.Count == 0)
+            return null;
+
+        // Берём первый признак
+        string firstTag = gMatches[0].Groups["val"].Value;
+        //Разбиваем поиск по разным частям речи
+        if (firstTag == "NOUN")
+        {
+            // Определяем роды
+            HashSet<string> genders = new HashSet<string> { "masc", "femn", "neut" };
+
+            // Ищем род среди остальных признаков
+            string genderTag = null;
+            for (int i = 1; i < gMatches.Count; i++)
+            {
+                string val = gMatches[i].Groups["val"].Value;
+                if (genders.Contains(val))
+                {
+                    genderTag = val;
+                    break;
+                }
+            }
+
+            // Если род не найден, берём второй признак, если он есть
+            if (genderTag == null && gMatches.Count > 1)
+                genderTag = gMatches[1].Groups["val"].Value;
+
+            if (genderTag == null)
+                return $"{id}-{firstTag}";
+
+            return $"{id}-{firstTag}-{genderTag}";
+        }
+        else
+        {
+            if (firstTag == "ADJF")
+            {
+
+            }
+            else
+            {
+                if (firstTag == "GRND")
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+        }
+
+
+        return "это не существительное";
+    }
+
+Ей на вход подается строка с леммой слова вида вида <lemma id="141902" rev="141902"><l t="краснопёрка"><g v="NOUN"/><g v="anim"/><g v="femn"/></l><f t="краснопёрка"><g v="sing"/><g v="nomn"/></f><f t="краснопёрки"><g v="sing"/><g v="gent"/></f><f t="краснопёрке"><g v="sing"/><g v="datv"/></f><f t="краснопёрку"><g v="sing"/><g v="accs"/></f><f t="краснопёркой"><g v="sing"/><g v="ablt"/></f><f t="краснопёркою"><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="краснопёрке"><g v="sing"/><g v="loct"/></f><f t="краснопёрки"><g v="plur"/><g v="nomn"/></f><f t="краснопёрок"><g v="plur"/><g v="gent"/></f><f t="краснопёркам"><g v="plur"/><g v="datv"/></f><f t="краснопёрок"><g v="plur"/><g v="accs"/></f><f t="краснопёрками"><g v="plur"/><g v="ablt"/></f><f t="краснопёрках"><g v="plur"/><g v="loct"/></f></lemma>
+после чего извлекает параметры id="141902" v="NOUN" v="femn"
+допиши чтобы программа также извлекла параметр "nomn"
+Учти, что данная программа корректно всё запишет, только если v="NOUN"
+Допиши случаи считывания, когда формат строки <lemma id="141922" rev="141922"><l t="краснорожий"><g v="ADJF"/></l><f t="краснорожий"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="краснорожего"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="краснорожему"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="краснорожего"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="краснорожий"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="краснорожим"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="краснорожем"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="краснорожая"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="краснорожей"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="краснорожей"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="краснорожую"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="краснорожей"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="краснорожею"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-ey"/></f><f t="краснорожей"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="краснорожее"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="краснорожего"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="краснорожему"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="краснорожее"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="краснорожим"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="краснорожем"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="краснорожие"><g v="plur"/><g v="nomn"/></f><f t="краснорожих"><g v="plur"/><g v="gent"/></f><f t="краснорожим"><g v="plur"/><g v="datv"/></f><f t="краснорожих"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="краснорожие"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="краснорожими"><g v="plur"/><g v="ablt"/></f><f t="краснорожих"><g v="plur"/><g v="loct"/></f></lemma>
+то есть когда v="ADJF"
+и с форматом <lemma id="142026" rev="142026"><l t="красуясь"><g v="GRND"/><g v="impf"/><g v="intr"/></l><f t="красуясь"><g v="pres"/></f><f t="красовавшись"><g v="past"/><g v="V-sh"/></f></lemma>
+то есть когда v="GRND"
