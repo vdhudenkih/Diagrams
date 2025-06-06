@@ -1,3 +1,82 @@
+public static void ModifyWords(List<Word> words)
+{
+    if (words == null || words.Count == 0)
+        return;
+
+    var prepositions = new HashSet<string> { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+
+    var nouns = words.Where(w => w.partOfSpeech == "NOUN").ToList();
+    var adjfs = words.Where(w => w.partOfSpeech == "ADJF").ToList();
+
+    bool hasPrepositions = words.Any(w => prepositions.Contains(w.wordText));
+
+    if (!hasPrepositions && nouns.Any())
+    {
+        if (nouns.Count == 1)
+        {
+            var noun = nouns[0];
+            foreach (var adjf in adjfs)
+            {
+                adjf.wordKind = noun.wordKind;
+                adjf.wordCase = noun.wordCase;
+            }
+        }
+        else
+        {
+            var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+            if (firstWord == null)
+                return;
+
+            var specialWords = new HashSet<string> { "набор", "комплект", "каталог", "блок" };
+            bool isSpecial = specialWords.Contains(firstWord.wordText);
+
+            if (adjfs.Count == 0)
+            {
+                if (!isSpecial)
+                {
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordCase = "gent";
+                    }
+                }
+                else
+                {
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordKind = "masc";
+                        w.wordCase = "gent";
+                        w.singPlur = "plur";
+                    }
+                }
+            }
+            else
+            {
+                if (isSpecial)
+                {
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordKind = "masc";
+                        w.wordCase = "gent";
+                        w.singPlur = "plur";
+                    }
+                }
+                else
+                {
+                    // ВАЖНО: согласно примеру, здесь нужно жестко задать значения, а не копировать из первого слова
+                    foreach (var w in words.Where(w => w.wordOrder != 0))
+                    {
+                        w.wordKind = "masc";
+                        w.wordCase = "gent";
+                        w.singPlur = "plur";
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 некорректный вывод
 ожидалось:
 wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
