@@ -52,6 +52,166 @@ public string wordCase;
 
 
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string wordId;
+    public string partOfSpeech;
+    public string wordKind;
+    public string singPlur;
+    public string wordCase;
+}
+
+public class Program
+{
+    public static void ModifyWords(List<Word> words)
+    {
+        if (words == null || words.Count == 0)
+            return;
+
+        // Список служебных слов
+        var prepositions = new HashSet<string> { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+
+        // Проверка условия partOfSpeech=ADJF - для таких объектов ничего не делаем
+        // Но по условию - если partOfSpeech=ADJF ничего не делать (т.е. пропускаем)
+        // Но в итоге мы можем менять ADJF объекты в определенных условиях, поэтому не пропускаем функцию целиком,
+        // а только пропускаем изменение для ADJF в начале.
+
+        // Проверяем, есть ли объекты с partOfSpeech=NOUN
+        var nouns = words.Where(w => w.partOfSpeech == "NOUN").ToList();
+
+        // Проверяем, есть ли объекты с partOfSpeech=ADJF
+        var adjfs = words.Where(w => w.partOfSpeech == "ADJF").ToList();
+
+        // Проверяем наличие служебных слов
+        bool hasPrepositions = words.Any(w => prepositions.Contains(w.wordText));
+
+        if (!hasPrepositions && nouns.Any())
+        {
+            // Есть NOUN и нет служебных слов
+
+            if (nouns.Count == 1)
+            {
+                // Если нет других объектов с partOfSpeech=NOUN (т.е. ровно 1 NOUN)
+
+                // Изменить wordKind и wordCase у всех ADJF на аналогичные у объекта с partOfSpeech=NOUN
+
+                var noun = nouns[0];
+                foreach (var adjf in adjfs)
+                {
+                    adjf.wordKind = noun.wordKind;
+                    adjf.wordCase = noun.wordCase;
+                }
+            }
+            else
+            {
+                // Есть несколько NOUN
+
+                if (!adjfs.Any())
+                {
+                    // Если нет объектов с partOfSpeech=ADJF
+
+                    // Проверяем объект с wordOrder==0
+                    var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+
+                    if (firstWord == null)
+                        return;
+
+                    var firstWordTexts = new HashSet<string> { "набор", "комплект", "каталог", "блок" };
+                    bool firstWordIsSpecial = firstWordTexts.Contains(firstWord.wordText);
+
+                    if (!firstWordIsSpecial)
+                    {
+                        // Изменить wordCase всех объектов, кроме wordOrder==0, на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordCase = "gent";
+                        }
+                    }
+                    else
+                    {
+                        // Изменить wordKind, wordCase, singPlur всех объектов, кроме wordOrder==0,
+                        // на wordKind="masc", wordCase="gent", singPlur="plur"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "plur";
+                        }
+                    }
+                }
+                else
+                {
+                    // Есть объекты с ADJF
+
+                    var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+
+                    if (firstWord == null)
+                        return;
+
+                    var firstWordTexts = new HashSet<string> { "набор", "комплект", "каталог", "блок" };
+                    bool firstWordIsSpecial = firstWordTexts.Contains(firstWord.wordText);
+
+                    if (firstWordIsSpecial)
+                    {
+                        // Изменить wordKind, wordCase, singPlur всех объектов, кроме wordOrder==0,
+                        // на wordKind="masc", wordCase="gent", singPlur="plur"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "plur";
+                        }
+                    }
+                    else
+                    {
+                        // Изменить wordKind, wordCase, singPlur всех объектов, кроме wordOrder==0,
+                        // на значения объекта с wordOrder==0
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = firstWord.wordKind;
+                            w.wordCase = firstWord.wordCase;
+                            w.singPlur = firstWord.singPlur;
+                        }
+
+                        // Изменить wordCase всех объектов, кроме wordOrder==0, на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordCase = "gent";
+                        }
+                    }
+                }
+            }
+        }
+        // Если partOfSpeech=ADJF - по условию ничего делать не нужно, но выше мы меняем их в определённых случаях.
+        // Если partOfSpeech=NOUN и есть служебные слова - по условию ничего делать не нужно.
+    }
+
+    // Для теста
+    public static void Main()
+    {
+        var words = new List<Word>
+        {
+            new Word { wordOrder = 0, wordText = "набор", partOfSpeech = "NOUN", wordKind = "femn", singPlur = "sing", wordCase = "nomn" },
+            new Word { wordOrder = 1, wordText = "красивый", partOfSpeech = "ADJF", wordKind = "femn", singPlur = "sing", wordCase = "nomn" },
+            new Word { wordOrder = 2, wordText = "кошка", partOfSpeech = "NOUN", wordKind = "femn", singPlur = "sing", wordCase = "nomn" }
+        };
+
+        ModifyWords(words);
+
+        foreach (var w in words)
+        {
+            Console.WriteLine($"Order: {w.wordOrder}, Text: {w.wordText}, POS: {w.partOfSpeech}, Kind: {w.wordKind}, SingPlur: {w.singPlur}, Case: {w.wordCase}");
+        }
+    }
+}
+
+
 
 
 
