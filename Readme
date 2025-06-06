@@ -1,3 +1,143 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string wordId;
+    public string partOfSpeech;
+    public string wordKind;
+    public string singPlur;
+    public string wordCase;
+
+    public Word(int order, string text, string id, string pos, string kind, string plur, string wCase)
+    {
+        wordOrder = order;
+        wordText = text;
+        wordId = id;
+        partOfSpeech = pos;
+        wordKind = kind;
+        singPlur = plur;
+        wordCase = wCase;
+    }
+}
+
+public class Program
+{
+    public static void ModifyWords(List<Word> words)
+    {
+        // Предлоги, при наличии которых функция ничего не делает
+        var prepositions = new HashSet<string> { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+        bool hasPreposition = words.Any(w => prepositions.Contains(w.wordText));
+
+        // Список NOUN и ADJF
+        var nouns = words.Where(w => w.partOfSpeech == "NOUN").ToList();
+        var adjfs = words.Where(w => w.partOfSpeech == "ADJF").ToList();
+
+        if (nouns.Count >= 1 && !hasPreposition)
+        {
+            // Если ровно один NOUN
+            if (nouns.Count == 1)
+            {
+                // Копируем wordKind и wordCase NOUN к ADJF
+                var noun = nouns[0];
+                foreach (var adjf in adjfs)
+                {
+                    adjf.wordKind = noun.wordKind;
+                    adjf.wordCase = noun.wordCase;
+                }
+            }
+            else
+            {
+                // NOUN больше одного
+                var zeroWord = words.FirstOrDefault(w => w.wordOrder == 0);
+                bool zeroWordIsSpecial = zeroWord != null && 
+                                         (zeroWord.wordText == "набор" || zeroWord.wordText == "комплект" ||
+                                          zeroWord.wordText == "каталог" || zeroWord.wordText == "блок");
+
+                if (adjfs.Count == 0)
+                {
+                    // Нет ADJF
+                    if (!zeroWordIsSpecial)
+                    {
+                        // Изменяем wordCase всех, кроме wordOrder==0, на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordCase = "gent";
+                        }
+                    }
+                    else
+                    {
+                        // Изменяем wordKind, wordCase, singPlur всех, кроме wordOrder==0
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "plur";
+                        }
+                    }
+                }
+                else
+                {
+                    // Есть ADJF
+                    if (zeroWordIsSpecial)
+                    {
+                        // Изменяем wordKind, wordCase, singPlur всех, кроме wordOrder==0
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "plur";
+                        }
+                    }
+                    else
+                    {
+                        // Изменяем wordKind, wordCase, singPlur всех, кроме wordOrder==0 на значения wordOrder==0
+                        // Затем wordCase всех, кроме wordOrder==0, меняем на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = zeroWord.wordKind;
+                            w.singPlur = zeroWord.singPlur;
+                            // Сначала присваиваем исходный wordCase
+                            w.wordCase = zeroWord.wordCase;
+                        }
+                        // Потом меняем wordCase на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordCase = "gent";
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void Main()
+    {
+        List<Word> words = new List<Word>
+        {
+            new Word(0, "набор", "166595", "NOUN", "masc", "sing", "nomn"),
+            new Word(1, "сварочный", "314735", "ADJF", "femn", "sing", "nomn"),
+            new Word(2, "аппарат", "15358", "NOUN", "femn", "sing", "nomn")
+        };
+
+        ModifyWords(words);
+
+        foreach (var w in words.OrderBy(w => w.wordOrder))
+        {
+            Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, wordId: {w.wordId}, partOfSpeech: {w.partOfSpeech}, wordKind: {w.wordKind}, singPlur: {w.singPlur}, wordCase: {w.wordCase}");
+        }
+    }
+}
+
+
+
+
+
+
+
 некорректный вывод:
 ожидалось:
     wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
