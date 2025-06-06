@@ -1,8 +1,13 @@
 ошибка в выводе:
 ожидалось:
-wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: gent
+wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+wordOrder: 1, wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+wordOrder: 2, wordText: ключ, wordId: 134733, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
 получено:
-wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: ADJF, singPlur: sing, wordCase: ADJF
+wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+wordOrder: 1, wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: nomn
+wordOrder: 2, wordText: ключ, wordId: 134733, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
+напиши изменнённую функцию
 
 напиши функцию на ЯП c# по следующему условию:
 программа считывает все объекты класса Word с параметрами:
