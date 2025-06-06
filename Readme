@@ -1,3 +1,15 @@
+некорректный вывод:
+ожидалось:
+wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
+получено:
+wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: nomn
+wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+
+
+
 напиши функцию на ЯП c# по следующему условию:
 на вход подаётся List<Word> words
 программа считывает все объекты класса Word с параметрами:
@@ -59,7 +71,7 @@ using System.Linq;
 
 public class WordProcessor
 {
-    public static void ProcessWords(List<Word> words)
+    public static void ModifyWords(List<Word> words)
     {
         if (words == null || words.Count == 0)
             return;
