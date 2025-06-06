@@ -1,3 +1,12 @@
+public static void PrintWords(List<Word> words)
+{
+    foreach (var w in words.OrderBy(w => w.wordOrder))
+    {
+        Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, wordId: {w.wordId}, partOfSpeech: {w.partOfSpeech}, wordKind: {w.wordKind}, singPlur: {w.singPlur}, wordCase: {w.wordCase}");
+    }
+}
+
+
 напиши функцию которая далает вывод List<Word> words в консоль
 
 напиши функцию на ЯП c# по следующему условию:
