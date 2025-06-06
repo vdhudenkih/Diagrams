@@ -1,104 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-public class Word
-{
-    public int wordOrder;
-    public string wordText;
-    public string wordId;
-    public string partOfSpeech;
-    public string wordKind;
-    public string singPlur;
-    public string wordCase;
-
-    public Word(int order, string text, string id, string pos, string kind, string plur, string wCase)
-    {
-        wordOrder = order;
-        wordText = text;
-        wordId = id;
-        partOfSpeech = pos;
-        wordKind = kind;
-        singPlur = plur;
-        wordCase = wCase;
-    }
-}
-
-public class Program
-{
-    public static void ModifyWords(List<Word> words)
-    {
-        bool hasPreposition = words.Any(w => w.wordText == "для" || w.wordText == "от" || w.wordText == "из" ||
-                                             w.wordText == "к" || w.wordText == "с" || w.wordText == "в" ||
-                                             w.wordText == "на" || w.wordText == "под" || w.wordText == "через");
-
-        if (words.Any(w => w.partOfSpeech == "NOUN") && !hasPreposition)
-        {
-            if (!words.Any(w => w.partOfSpeech == "ADJF"))
-            {
-                if (!words.Any(w => w.wordOrder == 0 && (w.wordText == "набор" || w.wordText == "комплект" ||
-                                                          w.wordText == "каталог" || w.wordText == "блок")))
-                {
-                    foreach (var word in words.Where(w => w.wordOrder != 0))
-                    {
-                        word.wordCase = "gent";
-                    }
-                }
-                else
-                {
-                    foreach (var word in words.Where(w => w.wordOrder != 0))
-                    {
-                        word.wordKind = "masc";
-                        word.wordCase = "gent";
-                        word.singPlur = "plur";
-                    }
-                }
-            }
-            else
-            {
-                if (words.Any(w => w.wordOrder == 0 && (w.wordText == "набор" || w.wordText == "комплект" ||
-                                                          w.wordText == "каталог" || w.wordText == "блок")))
-                {
-                    foreach (var word in words.Where(w => w.wordOrder != 0))
-                    {
-                        word.wordKind = "masc";
-                        word.wordCase = "gent";
-                        word.singPlur = "plur";
-                    }
-                }
-                else
-                {
-                    var zeroOrderWord = words.First(w => w.wordOrder == 0);
-                    foreach (var word in words.Where(w => w.wordOrder != 0))
-                    {
-                        word.wordKind = zeroOrderWord.wordKind;
-                        word.wordCase = zeroOrderWord.wordCase;
-                        word.singPlur = zeroOrderWord.singPlur;
-                        word.wordCase = "gent";
-                    }
-                }
-            }
-        }
-    }
-
-    public static void Main()
-    {
-        List<Word> words = new List<Word>
-        {
-            new Word(0, "кошка", "1000", "NOUN", "femn", "sing", "nomn"),
-            new Word(1, "книга", "1001", "NOUN", "femn", "sing", "nomn"),
-            new Word(2, "к", "1002", "PREP", "", "", ""),
-            new Word(3, "красивый", "1003", "ADJF", "masc", "sing", "nomn")
-        };
-
-        ModifyWords(words);
-
-        foreach (var word in words)
-        {
-            Console.WriteLine($"{word.wordOrder}, {word.wordText}, {word.wordId}, {word.partOfSpeech}, {word.wordKind}, {word.singPlur}, {word.wordCase}");
-        }
-    }
-}
+некорректный вывод:
+ожидалось:
+    wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+    
+    wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+    
+    wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
+получено:
+    wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+    
+    wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: nomn
+    
+    wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: gent
 
 
 
