@@ -1,93 +1,3 @@
-public static void ModifyWords(List<Word> words)
-{
-    bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
-    bool hasAdjf = words.Any(w => w.partOfSpeech == "ADJF");
-
-    string[] prepositions = { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
-    bool hasPreposition = words.Any(w => prepositions.Contains(w.wordText));
-
-    var wordOrderZero = words.FirstOrDefault(w => w.wordOrder == 0);
-
-    if (!hasPreposition)
-    {
-        if (!hasNoun)
-        {
-            return;
-        }
-        else
-        {
-            if (!hasAdjf)
-            {
-                if (wordOrderZero != null && !(wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
-                                              wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
-                {
-                    foreach (var w in words.Where(w => w.wordOrder != 0))
-                    {
-                        w.wordCase = "gent";
-                    }
-                }
-                else
-                {
-                    // Здесь изменено условие:
-                    // Для всех объектов, кроме wordOrder==0, устанавливаем одинаково:
-                    // wordKind = "masc", wordCase = "gent", singPlur = "plur"
-                    foreach (var w in words.Where(w => w.wordOrder != 0))
-                    {
-                        w.wordKind = "masc";
-                        w.wordCase = "gent";
-                        w.singPlur = "plur";
-                    }
-                }
-            }
-            else
-            {
-                if (wordOrderZero != null && (wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
-                                              wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
-                {
-                    foreach (var w in words.Where(w => w.wordOrder != 0))
-                    {
-                        w.wordKind = "masc";
-                        w.wordCase = "gent";
-                        w.singPlur = "plur";
-                    }
-                }
-                else
-                {
-                    foreach (var w in words.Where(w => w.wordOrder != 0))
-                    {
-                        w.wordKind = wordOrderZero.wordKind;
-                        w.singPlur = wordOrderZero.singPlur;
-                        w.wordCase = "gent";
-                    }
-                }
-            }
-        }
-    }
-
-    // Для ADJF можно оставить без изменений или по необходимости
-}
-
-
-
-
-измени код с изменением условия
-было:
-изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на (wordKind="masc" и wordCase="gent" и singPlur="plur" где partOfSpeech=NOUN) и ((wordKind="masc" и wordCase="gent" и singPlur="sing" где partOfSpeech=ADJF)
-должно быть:
-изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на (wordKind="masc" и wordCase="gent" и singPlur="plur")
-
-
-ошибка в выводе:
-ожидалось:
-wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
-wordOrder: 1, wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
-wordOrder: 2, wordText: ключ, wordId: 134733, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
-получено:
-wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
-wordOrder: 1, wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: nomn
-wordOrder: 2, wordText: ключ, wordId: 134733, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
-напиши изменнённую функцию
-
 напиши функцию на ЯП c# по следующему условию:
 программа считывает все объекты класса Word с параметрами:
 public int wordOrder;
@@ -117,7 +27,7 @@ public string wordCase;
                     }
                 иначе:
                     {
-                    изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на (wordKind="masc" и wordCase="gent" и singPlur="plur" где partOfSpeech=NOUN) и ((wordKind="masc" и wordCase="gent" и singPlur="sing" где partOfSpeech=ADJF)
+                    изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на (wordKind="masc" и wordCase="gent" и singPlur="plur")
                     }
             }
         Иначе:
