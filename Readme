@@ -1,2 +1,93 @@
 новая ошибка, при вводе <lemma id="142031" rev="142031"><l t="красота"><g v="NOUN"/><g v="inan"/><g v="femn"/></l><f t="красота"><g v="sing"/><g v="nomn"/></f><f t="красоты"><g v="sing"/><g v="gent"/></f><f t="красоте"><g v="sing"/><g v="datv"/></f><f t="красоту"><g v="sing"/><g v="accs"/></f><f t="красотой"><g v="sing"/><g v="ablt"/></f><f t="красотою"><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="красоте"><g v="sing"/><g v="loct"/></f><f t="красоты"><g v="plur"/><g v="nomn"/></f><f t="красот"><g v="plur"/><g v="gent"/></f><f t="красотам"><g v="plur"/><g v="datv"/></f><f t="красоты"><g v="plur"/><g v="accs"/></f><f t="красотами"><g v="plur"/><g v="ablt"/></f><f t="красотах"><g v="plur"/><g v="loct"/></f></lemma>
 не выводится v="femn"
+
+
+
+public static string LemmaPropertySearch(string lemmaString)
+{
+    var lemmaPattern = new Regex(@"<lemma\s+id=""(?<id>\d+)""[^>]*>.*?</lemma>", RegexOptions.Singleline);
+    var lemmaMatch = lemmaPattern.Match(lemmaString);
+    if (!lemmaMatch.Success)
+        return null;
+
+    string lemmaContent = lemmaMatch.Value;
+    string id = lemmaMatch.Groups["id"].Value;
+
+    // Извлекаем часть речи и род из <l>
+    var lPattern = new Regex(@"<l\s+t=""[^""]+"">(?<lContent>.*?)</l>", RegexOptions.Singleline);
+    var lMatch = lPattern.Match(lemmaContent);
+    if (!lMatch.Success)
+        return null;
+
+    string lContent = lMatch.Groups["lContent"].Value;
+    var gPattern = new Regex(@"<g\s+v=""(?<val>[^""]+)""\s*/>");
+    var gMatches = gPattern.Matches(lContent);
+    if (gMatches.Count == 0)
+        return null;
+
+    string partOfSpeech = gMatches[0].Groups["val"].Value;
+
+    // Ищем род в <g> из <l>
+    string genderTag = null;
+    foreach (Match g in gMatches)
+    {
+        string val = g.Groups["val"].Value;
+        if (val == "masc" || val == "femn" || val == "neut")
+        {
+            genderTag = val;
+            break; // берем первый найденный род
+        }
+    }
+
+    // Теперь ищем формы <f>
+    var fPattern = new Regex(@"<f\s+t=""[^""]+"">(?<fContent>.*?)</f>", RegexOptions.Singleline);
+    var fMatches = fPattern.Matches(lemmaContent);
+    if (fMatches.Count == 0)
+        return $"{id}-{partOfSpeech}";
+
+    // Наборы падежей
+    HashSet<string> cases = new HashSet<string> { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+
+    // Попытаемся найти форму с падежом nomn, если нет — возьмём первую форму
+    Match selectedForm = null;
+    foreach (Match fMatch in fMatches)
+    {
+        string fContent = fMatch.Groups["fContent"].Value;
+        var gInF = gPattern.Matches(fContent);
+        foreach (Match g in gInF)
+        {
+            string val = g.Groups["val"].Value;
+            if (val == "nomn")
+            {
+                selectedForm = fMatch;
+                break;
+            }
+        }
+        if (selectedForm != null)
+            break;
+    }
+    if (selectedForm == null)
+        selectedForm = fMatches[0];
+
+    // Из выбранной формы извлекаем падеж
+    string caseTag = null;
+    var gMatchesInF = gPattern.Matches(selectedForm.Groups["fContent"].Value);
+    foreach (Match g in gMatchesInF)
+    {
+        string val = g.Groups["val"].Value;
+        if (cases.Contains(val))
+        {
+            caseTag = val;
+            break; // берем первый найденный падеж
+        }
+    }
+
+    // Формируем результат
+    string result = $"{id}-{partOfSpeech}";
+    if (genderTag != null)
+        result += $"-{genderTag}";
+    if (caseTag != null)
+        result += $"-{caseTag}";
+
+    return result;
+}
