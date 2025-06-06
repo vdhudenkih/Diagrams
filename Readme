@@ -56,6 +56,174 @@ public string wordCase;
 
 
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string wordId;
+    public string partOfSpeech;
+    public string wordKind;
+    public string singPlur;
+    public string wordCase;
+
+    public Word(int order, string text, string id, string pos, string kind, string plur, string wCase)
+    {
+        wordOrder = order;
+        wordText = text;
+        wordId = id;
+        partOfSpeech = pos;
+        wordKind = kind;
+        singPlur = plur;
+        wordCase = wCase;
+    }
+
+    public override string ToString()
+    {
+        return $"wordText: {wordText}, wordId: {wordId}, partOfSpeech: {partOfSpeech}, wordKind: {wordKind}, singPlur: {singPlur}, wordCase: {wordCase}";
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<Word> words = new List<Word>
+        {
+            new Word(0, "набор", "1000", "NOUN", "masc", "sing", "nomn"),
+            new Word(1, "гаечный", "65785", "ADJF", "femn", "sing", "nomn"),
+            new Word(2, "что-то", "1002", "NOUN", "masc", "plur", "accs"),
+            // Добавьте другие объекты по необходимости
+        };
+
+        ModifyWords(words);
+
+        foreach (var w in words)
+        {
+            Console.WriteLine(w);
+        }
+    }
+
+    public static void ModifyWords(List<Word> words)
+    {
+        // Проверяем наличие NOUN и ADJF
+        bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
+        bool hasAdjf = words.Any(w => w.partOfSpeech == "ADJF");
+
+        // Проверяем наличие предлогов
+        string[] prepositions = { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+        bool hasPreposition = words.Any(w => prepositions.Contains(w.wordText));
+
+        // Находим объект с wordOrder==0
+        var wordOrderZero = words.FirstOrDefault(w => w.wordOrder == 0);
+
+        if (!hasPreposition)
+        {
+            if (!hasNoun)
+            {
+                // Если нет NOUN, то изменить wordKind и wordCase у ADJF на значения из NOUN
+                // Но NOUN нет, значит логика непонятна — оставим без изменений или можно задать дефолт
+                // Здесь логика не определена, поэтому просто не меняем
+                return;
+            }
+            else
+            {
+                if (!hasAdjf)
+                {
+                    if (wordOrderZero != null && !(wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
+                                                  wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
+                    {
+                        // Изменить wordCase всех объектов, кроме wordOrder==0, на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordCase = "gent";
+                        }
+                    }
+                    else
+                    {
+                        // Изменить параметры у всех кроме wordOrder==0:
+                        // для NOUN: wordKind="masc", wordCase="gent", singPlur="plur"
+                        // для ADJF: wordKind="masc", wordCase="gent", singPlur="sing"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            if (w.partOfSpeech == "NOUN")
+                            {
+                                w.wordKind = "masc";
+                                w.wordCase = "gent";
+                                w.singPlur = "plur";
+                            }
+                            else if (w.partOfSpeech == "ADJF")
+                            {
+                                w.wordKind = "masc";
+                                w.wordCase = "gent";
+                                w.singPlur = "sing";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (wordOrderZero != null && (wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
+                                                  wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
+                    {
+                        // Изменить параметры (wordKind, wordCase, singPlur) всех кроме wordOrder==0 на masc/gent/plur
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = "masc";
+                            w.wordCase = "gent";
+                            w.singPlur = "plur";
+                        }
+                    }
+                    else
+                    {
+                        // Изменить параметры всех кроме wordOrder==0 на значения wordOrderZero
+                        // а затем изменить wordCase всех кроме wordOrder==0 на "gent"
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordKind = wordOrderZero.wordKind;
+                            w.singPlur = wordOrderZero.singPlur;
+                            w.wordCase = wordOrderZero.wordCase;
+                        }
+                        foreach (var w in words.Where(w => w.wordOrder != 0))
+                        {
+                            w.wordCase = "gent";
+                        }
+                    }
+                }
+            }
+        }
+
+        // Важный момент: если partOfSpeech == "ADJF", ничего не делать (по условию)
+        // Но если нужно изменить wordKind и wordCase у ADJF на значения NOUN (как в одном из условий),
+        // то нужно найти NOUN для копирования
+
+        // Дополнительная логика (если нужно):
+        // Если partOfSpeech == "ADJF" и нужно изменить wordKind и wordCase на значения NOUN, то делаем это здесь
+
+        // Например, если в условии нужно заменить wordKind и wordCase у ADJF на значения NOUN, то:
+
+        // Находим первый NOUN для копирования значений
+        var firstNoun = words.FirstOrDefault(w => w.partOfSpeech == "NOUN");
+        if (firstNoun != null)
+        {
+            foreach (var adjf in words.Where(w => w.partOfSpeech == "ADJF"))
+            {
+                // Копируем значения wordKind и wordCase из NOUN
+                adjf.wordKind = firstNoun.wordKind;
+                adjf.wordCase = firstNoun.wordCase;
+                // singPlur оставляем без изменений, если не указано иное
+            }
+        }
+    }
+}
+
+
+
+
+
 
 
 
