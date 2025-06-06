@@ -1,13 +1,8 @@
-public static void PrintWords(List<Word> words)
-{
-    foreach (var w in words.OrderBy(w => w.wordOrder))
-    {
-        Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, wordId: {w.wordId}, partOfSpeech: {w.partOfSpeech}, wordKind: {w.wordKind}, singPlur: {w.singPlur}, wordCase: {w.wordCase}");
-    }
-}
-
-
-напиши функцию которая далает вывод List<Word> words в консоль
+ошибка в выводе:
+ожидалось:
+wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: gent
+получено:
+wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: ADJF, singPlur: sing, wordCase: ADJF
 
 напиши функцию на ЯП c# по следующему условию:
 программа считывает все объекты класса Word с параметрами:
