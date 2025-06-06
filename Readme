@@ -171,3 +171,63 @@ public static string LemmaPropertySearch(string lemmaString)
     return "это не существительное";
 }
 
+
+
+
+public static string LemmaPropertySearch(string lemmaString)
+{
+    var lemmaPattern = new Regex(@"<lemma\s+id=""(?<id>\d+)""[^>]*>.*?<l\s+t=""[^""]+"">(?<lContent>.*?)</l>.*?</lemma>", RegexOptions.Singleline);
+    var match = lemmaPattern.Match(lemmaString);
+    if (!match.Success)
+        return null;
+
+    string id = match.Groups["id"].Value;
+    string lContent = match.Groups["lContent"].Value;
+
+    var gPattern = new Regex(@"<g\s+v=""(?<val>[^""]+)""\s*/>");
+    var gMatches = gPattern.Matches(lContent);
+
+    if (gMatches.Count == 0)
+        return null;
+
+    string firstTag = gMatches[0].Groups["val"].Value;
+
+    // Наборы признаков
+    HashSet<string> genders = new HashSet<string> { "masc", "femn", "neut" };
+    HashSet<string> cases = new HashSet<string> { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+
+    string genderTag = null;
+    string caseTag = null;
+
+    // Ищем род и падеж среди признаков (начиная со второго, т.к. первый - часть речи)
+    for (int i = 1; i < gMatches.Count; i++)
+    {
+        string val = gMatches[i].Groups["val"].Value;
+        if (genderTag == null && genders.Contains(val))
+            genderTag = val;
+        if (caseTag == null && cases.Contains(val))
+            caseTag = val;
+    }
+
+    if (firstTag == "NOUN" || firstTag == "ADJF")
+    {
+        // Формируем строку с id, частью речи, родом и падежом (если есть)
+        string result = $"{id}-{firstTag}";
+        if (genderTag != null)
+            result += $"-{genderTag}";
+        if (caseTag != null)
+            result += $"-{caseTag}";
+        return result;
+    }
+    else if (firstTag == "GRND")
+    {
+        // Для герундия просто id и часть речи
+        return $"{id}-{firstTag}";
+    }
+    else
+    {
+        // Для остальных частей речи просто id и часть речи
+        return $"{id}-{firstTag}";
+    }
+}
+
