@@ -48,8 +48,137 @@ public string wordCase;
 
 
 
-дополни программу:
-теперь она должна аналогично выводить признаки sing/plur 
+
+
+
+
+
+решение
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string wordId;
+    public string partOfSpeech;
+    public string wordKind;
+    public string singPlur;
+    public string wordCase;
+
+    public Word(int order, string text, string id, string pos, string kind, string plur, string wCase)
+    {
+        wordOrder = order;
+        wordText = text;
+        wordId = id;
+        partOfSpeech = pos;
+        wordKind = kind;
+        singPlur = plur;
+        wordCase = wCase;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<Word> words = new List<Word>
+        {
+            new Word(0, "кошка", "1000", "NOUN", "femn", "sing", "nomn"),
+            new Word(1, "для", "1001", "ADJF", "femn", "sing", "nomn"),
+            new Word(2, "набор", "1002", "NOUN", "masc", "sing", "nomn"),
+            // Добавьте другие объекты по необходимости
+        };
+
+        ModifyWords(words);
+    }
+
+    public static void ModifyWords(List<Word> words)
+    {
+        bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
+        bool hasAdjf = words.Any(w => w.partOfSpeech == "ADJF");
+        bool hasPreposition = words.Any(w => w.wordText == "для" || w.wordText == "от" || w.wordText == "из" ||
+                                             w.wordText == "к" || w.wordText == "с" || w.wordText == "в" ||
+                                             w.wordText == "на" || w.wordText == "под" || w.wordText == "через");
+
+        if (!hasPreposition)
+        {
+            if (!hasNoun)
+            {
+                foreach (var adjf in words.Where(w => w.partOfSpeech == "ADJF"))
+                {
+                    adjf.wordKind = "ADJF"; // предполагаем, что мы берем значения от NOUN
+                    adjf.wordCase = "ADJF"; // предполагаем, что мы берем значения от NOUN
+                }
+            }
+            else
+            {
+                if (!hasAdjf)
+                {
+                    var wordOrderZero = words.FirstOrDefault(w => w.wordOrder == 0);
+                    if (wordOrderZero != null && !(wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
+                                                    wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
+                    {
+                        foreach (var word in words.Where(w => w.wordOrder != 0))
+                        {
+                            word.wordCase = "gent";
+                        }
+                    }
+                    else
+                    {
+                        foreach (var word in words.Where(w => w.wordOrder != 0))
+                        {
+                            if (word.partOfSpeech == "NOUN")
+                            {
+                                word.wordKind = "masc";
+                                word.wordCase = "gent";
+                                word.singPlur = "plur";
+                            }
+                            else if (word.partOfSpeech == "ADJF")
+                            {
+                                word.wordKind = "masc";
+                                word.wordCase = "gent";
+                                word.singPlur = "sing";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var wordOrderZero = words.FirstOrDefault(w => w.wordOrder == 0);
+                    if (wordOrderZero != null && (wordOrderZero.wordText == "набор" || wordOrderZero.wordText == "комплект" ||
+                                                    wordOrderZero.wordText == "каталог" || wordOrderZero.wordText == "блок"))
+                    {
+                        foreach (var word in words.Where(w => w.wordOrder != 0))
+                        {
+                            word.wordKind = "masc";
+                            word.wordCase = "gent";
+                            word.singPlur = "plur";
+                        }
+                    }
+                    else
+                    {
+                        foreach (var word in words.Where(w => w.wordOrder != 0))
+                        {
+                            word.wordKind = wordOrderZero.wordKind;
+                            word.wordCase = wordOrderZero.wordCase;
+                            if (word.partOfSpeech == "NOUN")
+                            {
+                                word.singPlur = wordOrderZero.singPlur;
+                            }
+                            word.wordCase = "gent";
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
