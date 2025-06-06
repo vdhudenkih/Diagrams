@@ -1,3 +1,20 @@
+некорректный вывод
+ожидалось:
+wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+
+wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+
+wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
+
+получено:
+wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+
+wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: nomn
+
+wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
+
+
+
 возможно некорректный алгоритм
 
 напиши функцию с названием ModifyWords на ЯП c# по следующему условию:
