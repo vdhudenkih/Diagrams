@@ -145,3 +145,89 @@ public static string LemmaPropertySearch(string lemmaString)
 
 ошибка сохранилась, у строки <lemma id="141641" rev="141641"><l t="красивый"><g v="ADJF"/><g v="Qual"/></l><f t="красивый"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="красивого"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="красивому"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="красивого"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="красивый"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="красивым"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="красивом"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="красивая"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="красивую"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="красивою"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="красивое"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="красивого"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="красивому"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="красивое"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="красивым"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="красивом"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="красивые"><g v="plur"/><g v="nomn"/></f><f t="красивых"><g v="plur"/><g v="gent"/></f><f t="красивым"><g v="plur"/><g v="datv"/></f><f t="красивых"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="красивые"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="красивыми"><g v="plur"/><g v="ablt"/></f><f t="красивых"><g v="plur"/><g v="loct"/></f></lemma>
 не выводится падеж v="nomn"
+
+
+
+решение
+
+
+
+public static string LemmaPropertySearch(string lemmaString)
+{
+    var lemmaPattern = new Regex(@"<lemma\s+id=""(?<id>\d+)""[^>]*>.*?</lemma>", RegexOptions.Singleline);
+    var lemmaMatch = lemmaPattern.Match(lemmaString);
+    if (!lemmaMatch.Success)
+        return null;
+
+    string lemmaContent = lemmaMatch.Value;
+    string id = lemmaMatch.Groups["id"].Value;
+
+    // Извлекаем часть речи из <l>
+    var lPattern = new Regex(@"<l\s+t=""[^""]+"">(?<lContent>.*?)</l>", RegexOptions.Singleline);
+    var lMatch = lPattern.Match(lemmaContent);
+    if (!lMatch.Success)
+        return null;
+
+    string lContent = lMatch.Groups["lContent"].Value;
+    var gPattern = new Regex(@"<g\s+v=""(?<val>[^""]+)""\s*/>");
+    var gMatches = gPattern.Matches(lContent);
+    if (gMatches.Count == 0)
+        return null;
+
+    string partOfSpeech = gMatches[0].Groups["val"].Value;
+
+    // Теперь ищем форму <f>, где есть нужный падеж (например nomn) или просто первую форму
+    var fPattern = new Regex(@"<f\s+t=""[^""]+"">(?<fContent>.*?)</f>", RegexOptions.Singleline);
+    var fMatches = fPattern.Matches(lemmaContent);
+    if (fMatches.Count == 0)
+        return $"{id}-{partOfSpeech}";
+
+    // Наборы родов и падежей
+    HashSet<string> genders = new HashSet<string> { "masc", "femn", "neut" };
+    HashSet<string> cases = new HashSet<string> { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+
+    // Попытаемся найти форму с падежом nomn, если нет — возьмём первую форму
+    Match selectedForm = null;
+    foreach (Match fMatch in fMatches)
+    {
+        string fContent = fMatch.Groups["fContent"].Value;
+        var gInF = gPattern.Matches(fContent);
+        foreach (Match g in gInF)
+        {
+            string val = g.Groups["val"].Value;
+            if (val == "nomn")
+            {
+                selectedForm = fMatch;
+                break;
+            }
+        }
+        if (selectedForm != null)
+            break;
+    }
+    if (selectedForm == null)
+        selectedForm = fMatches[0];
+
+    // Из выбранной формы извлекаем род и падеж
+    string genderTag = null;
+    string caseTag = null;
+
+    var gMatchesInF = gPattern.Matches(selectedForm.Groups["fContent"].Value);
+    foreach (Match g in gMatchesInF)
+    {
+        string val = g.Groups["val"].Value;
+        if (genderTag == null && genders.Contains(val))
+            genderTag = val;
+        if (caseTag == null && cases.Contains(val))
+            caseTag = val;
+    }
+
+    // Формируем результат
+    string result = $"{id}-{partOfSpeech}";
+    if (genderTag != null)
+        result += $"-{genderTag}";
+    if (caseTag != null)
+        result += $"-{caseTag}";
+
+    return result;
+}
+
