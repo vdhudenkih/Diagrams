@@ -1,0 +1,437 @@
+using System.Xml.Linq;
+
+
+class Lemmatizer
+{
+    static void Main()
+    {
+        Console.WriteLine("Введите название материала: ");
+        string inputString = Console.ReadLine();
+        //Убираем все точки и запятые
+        inputString = inputString.Replace(",", "").Replace(".", "").Replace("-", "");
+        string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); //Разделяем строку в массив по пробелам
+        string[] lemmas;
+        int count = 0;
+        List<Word> words = new List<Word>();
+        for (int i = 0; i < inputMaterials.Length; i++)
+        {
+            lemmas = SearchInDictionary(inputMaterials[i]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (int j = 0; j < lemmas.Length; j++)
+            {
+                string[] list = lemmas[j].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                if ((list[0] == "иза") || (list[0] == "как") || ((list[0] == "под" || list[0] == "для") && list[2] != "PREP"))
+                {
+
+                }
+                else
+                {
+                    words.Add(new Word(i, list[0], list[1], list[2], list[3], list[4], list[5]));
+                    count = i + 1;
+                }
+            }
+        }
+        //ModifyWords(words);
+        //if (count>1)
+        //{
+        //    ReplaceWords(words);
+        //}
+        PrintWords(words);
+    }
+
+    static string SearchInDictionary(string word)
+    {
+        word = word.ToLower();
+        string[] dictionaryNumbers = ["", "ёаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя"];
+        string dictionaryNumber = "";
+        for (int i = 0; i < dictionaryNumbers.Length; i++)
+        {
+            if (dictionaryNumbers[i].Contains(word[0]))
+            {
+                dictionaryNumber += "-";
+                dictionaryNumber += i;
+            }
+        }
+        dictionaryNumber += "-17";
+        string[] foundDictionaries = dictionaryNumber.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+        string lemmas = "";
+        string filePath = "";
+        for (int i = 0; i < foundDictionaries.Length; i++)
+        {
+            filePath = "lemmas" + foundDictionaries[i] + ".txt";
+            string[] fileContent = ReadFileToLines(filePath);
+
+            string[] strSearch = FindAllContainingWord(fileContent, word);
+            if (strSearch.Length > 0)
+            {
+                for (int j = 0; j < strSearch.Length; j++)
+                {
+                    if (strSearch[j] != "строка не найдена")
+                    {
+                        lemmas += FindLemma(word, strSearch[j]);
+                        lemmas += "-" + LemmaPropertySearch(strSearch[j]) + " ";
+
+                    }
+                }
+                return lemmas;
+            }
+        }
+
+        return "не найдено";
+    }
+    public bool IsRussian(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return false;
+
+        foreach (char c in input)
+        {
+            // Проверяем, является ли символ русской буквой (диапазон Unicode для русского алфавита)
+            // или пробелом, или распространённым знаком препинания
+            if (!(c >= 'А' && c <= 'я' || c == 'ё' || c == 'Ё' || 
+                c == ' ' || c == ',' || c == '.' || c == '!' || 
+                c == '?' || c == '-' || c == ':' || c == ';'))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static string FindLemma(string word, string str)
+    {
+        string xmlData = str;
+
+        XDocument xmlDoc = XDocument.Parse(xmlData);
+        var lemmaElement = xmlDoc.Descendants("lemma").FirstOrDefault();
+
+        if (lemmaElement != null)
+        {
+            string lemma = lemmaElement.Element("l").Attribute("t").Value;
+
+            foreach (var form in lemmaElement.Elements("f"))
+            {
+                if (form.Attribute("t").Value == word)
+                {
+                    return lemma;
+                }
+            }
+        }
+
+        return "не найдено"; // Если лемма не найдена
+    }
+
+    static string[] ReadFileToLines(string path)
+    {
+        // Проверяем, существует ли файл
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"Файл не найден: {path}");
+
+        // Считываем все строки из файла в массив
+        return File.ReadAllLines(path);
+    }
+
+    static string[] FindAllContainingWord(string[] array, string word)
+    {
+        return array.Where(s => s.Contains("\"" + word + "\"")).ToArray();
+    }
+    //Добавить: Изменить подход к разным частям речи, добавить нахождение падежей и мер численности
+    public static string LemmaPropertySearch(string lemmaXml)
+    {
+        try
+        {
+            var xdoc = XDocument.Parse(lemmaXml);
+            var lemma = xdoc.Element("lemma");
+            if (lemma == null)
+                return null;
+
+            string id = lemma.Attribute("id")?.Value ?? "0000";
+
+            var l = lemma.Element("l");
+            if (l == null)
+                return null;
+
+            // Часть речи — первый <g v="..."/> внутри <l>
+            string pos = l.Elements("g").FirstOrDefault()?.Attribute("v")?.Value ?? "0000";
+
+            // Род из <l> — masc, femn, neut
+            string genderFromL = l.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? "0000";
+
+            // Берём первый <f> — первую форму
+            var firstF = lemma.Elements("f").FirstOrDefault();
+            if (firstF == null)
+                return $"{id}-{pos}-{genderFromL}-0000-0000";
+
+            var gValuesF = firstF.Elements("g").Select(g => g.Attribute("v")?.Value).ToList();
+
+            // Род из <f>, если есть, иначе из <l>
+            string gender = gValuesF.FirstOrDefault(v => v == "masc" || v == "femn" || v == "neut") ?? genderFromL;
+
+            // Падеж — nomn, gent, datv, accs, ablt, loct
+            string[] cases = { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+            string caseVal = gValuesF.FirstOrDefault(v => cases.Contains(v)) ?? "0000";
+
+            // Число — sing или plur
+            string number = gValuesF.FirstOrDefault(v => v == "sing" || v == "plur") ?? "0000";
+
+            return $"{id}-{pos}-{gender}-{number}-{caseVal}";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    public static void PrintWords(List<Word> words)
+    {
+        foreach (var w in words.OrderBy(w => w.wordOrder))
+        {
+            Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, wordId: {w.wordId}, partOfSpeech: {w.partOfSpeech}, wordKind: {w.wordKind}, singPlur: {w.singPlur}, wordCase: {w.wordCase}");
+        }
+    }
+    public static void ModifyWords(List<Word> words)
+    {
+        var prepositions = new[] { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+        var specialNouns = new[] { "набор", "комплект", "каталог", "блок", "перечень" };
+
+        // Find first preposition and its index
+        int prepIndex = words.FindIndex(w => prepositions.Contains(w.wordText));
+        bool hasPreposition = prepIndex != -1;
+
+        // Find noun and adjective counts
+        bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
+        bool hasAdjective = words.Any(w => w.partOfSpeech == "ADJF");
+        bool isSpecialFirstNoun = words.Any(w => w.wordOrder == 0 && specialNouns.Contains(w.wordText));
+
+        if (!hasPreposition)
+        {
+            ProcessWordList(words, hasNoun, hasAdjective, isSpecialFirstNoun);
+        }
+        else
+        {
+            // Process words before preposition
+            var wordsBeforePrep = words.Take(prepIndex).ToList();
+            ProcessWordList(wordsBeforePrep,
+                wordsBeforePrep.Any(w => w.partOfSpeech == "NOUN"),
+                wordsBeforePrep.Any(w => w.partOfSpeech == "ADJF"),
+                wordsBeforePrep.Any(w => w.wordOrder == 0 && specialNouns.Contains(w.wordText)));
+
+            // Process words after preposition
+            var wordsAfterPrep = words.Skip(prepIndex + 1).ToList();
+            var prepWord = words[prepIndex].wordText;
+
+            if (new[] { "для", "от", "из" }.Contains(prepWord))
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "gent";
+                }
+            }
+            else if (new[] { "на", "под", "через" }.Contains(prepWord))
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "accs";
+                }
+            }
+            else if (prepWord == "в")
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "loct";
+                }
+            }
+            else if (prepWord == "с")
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "ablt";
+                }
+            }
+            else if (new[] { "к", "по" }.Contains(prepWord))
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "datv";
+                }
+            }
+        }
+    }
+
+    private static void ProcessWordList(List<Word> words, bool hasNoun, bool hasAdjective, bool isSpecialFirstNoun)
+    {
+        if (!hasNoun) return;
+
+        var firstNoun = words.FirstOrDefault(w => w.partOfSpeech == "NOUN");
+
+        if (!hasAdjective)
+        {
+            if (!isSpecialFirstNoun)
+            {
+                foreach (var word in words.Where(w => w.wordOrder != 0))
+                {
+                    word.wordCase = "gent";
+                }
+            }
+            else
+            {
+                foreach (var word in words.Where(w => w.wordOrder != 0))
+                {
+                    word.wordKind = "masc";
+                    word.wordCase = "gent";
+                    word.singPlur = "plur";
+                }
+            }
+        }
+        else
+        {
+            if (isSpecialFirstNoun)
+            {
+                foreach (var word in words.Where(w => w.wordOrder != 0))
+                {
+                    word.wordKind = "masc";
+                    word.wordCase = "gent";
+                    word.singPlur = "plur";
+                }
+            }
+            else
+            {
+                var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+                if (firstWord != null)
+                {
+                    foreach (var word in words.Where(w => w.wordOrder != 0))
+                    {
+                        word.wordKind = firstWord.wordKind;
+                        word.wordCase = "gent";
+                        word.singPlur = firstWord.singPlur;
+                    }
+                }
+            }
+        }
+
+        // Handle adjectives when only one noun exists
+        if (hasNoun && words.Count(w => w.partOfSpeech == "NOUN") == 1)
+        {
+            foreach (var word in words.Where(w => w.partOfSpeech == "ADJF"))
+            {
+                word.wordKind = firstNoun.wordKind;
+                word.wordCase = firstNoun.wordCase;
+            }
+        }
+    }
+
+
+    private static readonly Dictionary<int, string> LemmaFiles = new Dictionary<int, string>
+    {
+        { 25000, "lemmas1.txt" },
+        { 50000, "lemmas2.txt" },
+        { 75000, "lemmas3.txt" },
+        { 100500, "lemmas4.txt" },
+        { 125000, "lemmas5.txt" },
+        { 150000, "lemmas6.txt" },
+        { 175000, "lemmas7.txt" },
+        { 195600, "lemmas8.txt" },
+        { 219999, "lemmas9.txt" },
+        { 244000, "lemmas10.txt" },
+        { 268000, "lemmas11.txt" },
+        { 291000, "lemmas12.txt" },
+        { 315500, "lemmas13.txt" },
+        { 340000, "lemmas14.txt" },
+        { 362000, "lemmas15.txt" },
+        { 372000, "lemmas16.txt" },
+        { 417260, "lemmas17.txt" }
+    };
+
+    public static List<Word> ReplaceWords(List<Word> words)
+    {
+        foreach (var word in words)
+        {
+            if (!int.TryParse(word.wordId, out int wordId))
+                continue;
+
+            string lemmaFile = GetLemmaFile(wordId);
+            if (string.IsNullOrEmpty(lemmaFile))
+                continue;
+
+            string newWordText = FindWordForm(lemmaFile, word);
+            if (!string.IsNullOrEmpty(newWordText))
+            {
+                word.wordText = newWordText;
+            }
+        }
+
+        return words;
+    }
+
+    private static string GetLemmaFile(int wordId)
+    {
+        foreach (var pair in LemmaFiles.OrderBy(x => x.Key))
+        {
+            if (wordId <= pair.Key)
+                return pair.Value;
+        }
+        return null;
+    }
+
+    private static string FindWordForm(string lemmaFile, Word word)
+    {
+        try
+        {
+            string xmlContent = File.ReadAllText(lemmaFile);
+            XDocument doc = XDocument.Parse($"<root>{xmlContent}</root>");
+
+            var lemma = doc.Descendants("lemma")
+                .FirstOrDefault(l => l.Attribute("id")?.Value == word.wordId);
+
+            if (lemma == null)
+                return null;
+
+            var form = lemma.Elements("f")
+                .FirstOrDefault(f =>
+                {
+                    var grams = f.Elements("g").Select(g => g.Attribute("v")?.Value).ToList();
+                    bool matchesSingPlur = grams.Contains(word.singPlur);
+                    bool matchesCase = grams.Contains(word.wordCase);
+                    bool matchesKind = true;
+
+                    if (word.partOfSpeech == "ADJF" && word.singPlur == "sing")
+                    {
+                        // Для прилагательных в единственном числе проверяем род
+                        matchesKind = grams.Contains(word.wordKind);
+                    }
+                    // Для множественного числа род не проверяем
+
+                    return matchesSingPlur && matchesCase && matchesKind;
+                });
+
+            return form?.Attribute("t")?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
+
+class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string wordId;
+    public string partOfSpeech;
+    public string wordKind;
+    public string singPlur;
+    public string wordCase;
+    public Word(int WordOrder, string WordText, string WordId, string PartOfSpeech, string WordKind, string SingPlur, string WordCase)
+    {
+        wordOrder = WordOrder;
+        wordText = WordText;
+        wordId = WordId;
+        partOfSpeech = PartOfSpeech;
+        wordKind = WordKind;
+        singPlur = SingPlur;
+        wordCase = WordCase;
+        
+    }
+}
