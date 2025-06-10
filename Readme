@@ -1,3 +1,59 @@
+using System;
+using System.Linq;
+using System.Xml.Linq;
+
+public class WordParser
+{
+    public static string ParseWord(string word, string lemmaXml)
+    {
+        try
+        {
+            // Parse XML
+            XElement lemma = XElement.Parse(lemmaXml);
+            
+            // Find the form matching the input word
+            var form = lemma.Elements("f")
+                .FirstOrDefault(f => f.Attribute("t")?.Value == word);
+            
+            if (form == null)
+                return "Word not found in lemma";
+
+            // Get lemma attributes
+            var lemmaAttrs = lemma.Element("l")?.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .Where(v => v != null)
+                .ToList() ?? new List<string>();
+
+            // Get form attributes
+            var formAttrs = form.Elements("g")
+                .Select(g => g.Attribute("v")?.Value)
+                .Where(v => v != null)
+                .ToList() ?? new List<string>();
+
+            // Combine attributes
+            var allAttrs = lemmaAttrs.Concat(formAttrs).ToList();
+
+            // Ensure output has exactly 6 components
+            // Format: word-POS-case-animacy-gender-number
+            string pos = allAttrs.FirstOrDefault(a => new[] { "NOUN", "ADJF" }.Contains(a)) ?? "0000";
+            string caseAttr = allAttrs.FirstOrDefault(a => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(a)) ?? "0000";
+            string animacy = allAttrs.Contains("anim") ? "anim" : (allAttrs.Contains("inan") ? "inan" : "0000");
+            string gender = allAttrs.FirstOrDefault(a => new[] { "masc", "femn", "neut" }.Contains(a)) ?? "0000";
+            string number = allAttrs.FirstOrDefault(a => new[] { "sing", "plur" }.Contains(a)) ?? "0000";
+
+            return $"{word}-{pos}-{caseAttr}-{animacy}-{gender}-{number}";
+        }
+        catch (Exception ex)
+        {
+            return $"Error processing lemma: {ex.Message}";
+        }
+    }
+}
+
+
+
+
+
 напиши функцию на ЯП c# по следующему условию:
 на вход подается массив типа string и подаются объекты класса Word вида List<Word> words = new List<Word>() с полями 
 public int wordOrder;
