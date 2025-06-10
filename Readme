@@ -1,264 +1,50 @@
-public static class WordModifier
-{
-    public static void ModifyWords(List<Word> words)
-    {
-        var prepositions = new[] { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
-        var specialNouns = new[] { "набор", "комплект", "каталог", "блок" };
-        
-        // Find first preposition and its index
-        int prepIndex = words.FindIndex(w => prepositions.Contains(w.wordText));
-        bool hasPreposition = prepIndex != -1;
-        
-        // Find noun and adjective counts
-        bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
-        bool hasAdjective = words.Any(w => w.partOfSpeech == "ADJF");
-        bool isSpecialFirstNoun = words.Any(w => w.wordOrder == 0 && specialNouns.Contains(w.wordText));
-
-        if (!hasPreposition)
-        {
-            ProcessWordList(words, hasNoun, hasAdjective, isSpecialFirstNoun);
-        }
-        else
-        {
-            // Process words before preposition
-            var wordsBeforePrep = words.Take(prepIndex).ToList();
-            ProcessWordList(wordsBeforePrep, 
-                wordsBeforePrep.Any(w => w.partOfSpeech == "NOUN"),
-                wordsBeforePrep.Any(w => w.partOfSpeech == "ADJF"),
-                wordsBeforePrep.Any(w => w.wordOrder == 0 && specialNouns.Contains(w.wordText)));
-
-            // Process words after preposition
-            var wordsAfterPrep = words.Skip(prepIndex + 1).ToList();
-            var prepWord = words[prepIndex].wordText;
-
-            if (new[] { "для", "от", "из" }.Contains(prepWord))
-            {
-                foreach (var word in wordsAfterPrep)
-                {
-                    word.wordCase = "gent";
-                }
-            }
-            else if (new[] { "на", "под", "через" }.Contains(prepWord))
-            {
-                foreach (var word in wordsAfterPrep)
-                {
-                    word.wordCase = "accs";
-                }
-            }
-            else if (prepWord == "в")
-            {
-                foreach (var word in wordsAfterPrep)
-                {
-                    word.wordCase = "loct";
-                }
-            }
-            else if (prepWord == "с")
-            {
-                foreach (var word in wordsAfterPrep)
-                {
-                    word.wordCase = "ablt";
-                }
-            }
-            else if (prepWord == "к")
-            {
-                foreach (var word in wordsAfterPrep)
-                {
-                    word.wordCase = "datv";
-                }
-            }
-        }
-    }
-
-    private static void ProcessWordList(List<Word> words, bool hasNoun, bool hasAdjective, bool isSpecialFirstNoun)
-    {
-        if (!hasNoun) return;
-
-        var firstNoun = words.FirstOrDefault(w => w.partOfSpeech == "NOUN");
-        
-        if (!hasAdjective)
-        {
-            if (!isSpecialFirstNoun)
-            {
-                foreach (var word in words.Where(w => w.wordOrder != 0))
-                {
-                    word.wordCase = "gent";
-                }
-            }
-            else
-            {
-                foreach (var word in words.Where(w => w.wordOrder != 0))
-                {
-                    word.wordKind = "masc";
-                    word.wordCase = "gent";
-                    word.singPlur = "plur";
-                }
-            }
-        }
-        else
-        {
-            if (isSpecialFirstNoun)
-            {
-                foreach (var word in words.Where(w => w.wordOrder != 0))
-                {
-                    word.wordKind = "masc";
-                    word.wordCase = "gent";
-                    word.singPlur = "plur";
-                }
-            }
-            else
-            {
-                var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
-                if (firstWord != null)
-                {
-                    foreach (var word in words.Where(w => w.wordOrder != 0))
-                    {
-                        word.wordKind = firstWord.wordKind;
-                        word.wordCase = "gent";
-                        word.singPlur = firstWord.singPlur;
-                    }
-                }
-            }
-        }
-
-        // Handle adjectives when only one noun exists
-        if (hasNoun && words.Count(w => w.partOfSpeech == "NOUN") == 1)
-        {
-            foreach (var word in words.Where(w => w.partOfSpeech == "ADJF"))
-            {
-                word.wordKind = firstNoun.wordKind;
-                word.wordCase = firstNoun.wordCase;
-            }
-        }
-    }
-}
-
-public class Word
-{
-    public int wordOrder;
-    public string wordText;
-    public string wordId;
-    public string partOfSpeech;
-    public string wordKind;
-    public string singPlur;
-    public string wordCase;
-}
+Напишу функцию с названием ReplacementByModifyers на ЯП C#:
+на вход подаётся List<Word> words
+программа считывает все объекты класса Word с параметрами:
+public int wordOrder;
+public string wordText;
+public string wordId;
+public string partOfSpeech;
+public string wordKind;
+public string singPlur;
+public string wordCase;
+типичным объектом будет, например: wordOrder: 
+wordOrder: 1, wordText: война, wordId: 49721, partOfSpeech: NOUN, wordKind: femn, singPlur: sing, wordCase: gent
+wordOrder: 1, wordText: красивый, wordId: 141641, partOfSpeech: ADJF, wordKind: femn, singPlur: sing, wordCase: nomn
+Это объект, в поле которого указана лемма (в примере "война"), НО признаки (wordKind: femn, singPlur: sing, wordCase: gent) это признаки, по которым должна быть найдена форма слова в файле словаря.
+Всего существует 17 словарей формата от "lemmas1.txt" до "lemmas17.txt"
+Чтобы выбрать нужный словарь для поиска используется wordId.
+в "lemmas1.txt" содержатся wordId= c 1 до 25000
+в "lemmas2.txt" содержатся wordId= c 25001 до 50000
+в "lemmas3.txt" содержатся wordId= c 50001 до 75000
+в "lemmas4.txt" содержатся wordId= c 75001 до 100500
+в "lemmas5.txt" содержатся wordId= c 100501 до 125000
+в "lemmas6.txt" содержатся wordId= c 125001 до 150000
+в "lemmas7.txt" содержатся wordId= c 150001 до 175000
+в "lemmas8.txt" содержатся wordId= c 175001 до 195600
+в "lemmas9.txt" содержатся wordId= c 195601 до 219999
+в "lemmas10.txt" содержатся wordId= c 220000 до 244000
+в "lemmas11.txt" содержатся wordId= c 244001 до 268000
+в "lemmas12.txt" содержатся wordId= c 268001 до 291000
+в "lemmas13.txt" содержатся wordId= c 291001 до 315500
+в "lemmas14.txt" содержатся wordId= c 315501 до 340000
+в "lemmas15.txt" содержатся wordId= c 340001 до 362000
+в "lemmas16.txt" содержатся wordId= c 362001 до 372000
+в "lemmas17.txt" содержатся wordId= c 372001 до 417260
+В словаре организация данных выполнена следующим образом:
+для примера "война":
+<lemma id="49721" rev="49721"><l t="война"><g v="NOUN"/><g v="inan"/><g v="femn"/></l><f t="война"><g v="sing"/><g v="nomn"/></f><f t="войны"><g v="sing"/><g v="gent"/></f><f t="войне"><g v="sing"/><g v="datv"/></f><f t="войну"><g v="sing"/><g v="accs"/></f><f t="войной"><g v="sing"/><g v="ablt"/></f><f t="войною"><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="войне"><g v="sing"/><g v="loct"/></f><f t="войны"><g v="plur"/><g v="nomn"/></f><f t="войн"><g v="plur"/><g v="gent"/></f><f t="войнам"><g v="plur"/><g v="datv"/></f><f t="войны"><g v="plur"/><g v="accs"/></f><f t="войнами"><g v="plur"/><g v="ablt"/></f><f t="войнах"><g v="plur"/><g v="loct"/></f></lemma>
+для примера "красивый":
+<lemma id="141641" rev="141641"><l t="красивый"><g v="ADJF"/><g v="Qual"/></l><f t="красивый"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="красивого"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="красивому"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="красивого"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="красивый"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="красивым"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="красивом"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="красивая"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="красивую"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="красивою"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="красивой"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="красивое"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="красивого"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="красивому"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="красивое"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="красивым"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="красивом"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="красивые"><g v="plur"/><g v="nomn"/></f><f t="красивых"><g v="plur"/><g v="gent"/></f><f t="красивым"><g v="plur"/><g v="datv"/></f><f t="красивых"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="красивые"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="красивыми"><g v="plur"/><g v="ablt"/></f><f t="красивых"><g v="plur"/><g v="loct"/></f></lemma>
+Для данных примеров должен быть следующий результат:
+для wordOrder: 1, wordText: война, wordId: 49721, partOfSpeech: NOUN, wordKind: femn, singPlur: sing, wordCase: gent
+результат: wordOrder: 1, wordText: войны, wordId: 49721, partOfSpeech: NOUN, wordKind: femn, singPlur: sing, wordCase: gent
+для wordOrder: 1, wordText: красивый, wordId: 141641, partOfSpeech: ADJF, wordKind: femn, singPlur: sing, wordCase: nomn
+результат: 1, wordText: красивая, wordId: 141641, partOfSpeech: ADJF, wordKind: femn, singPlur: sing, wordCase: nomn
 
 
 
 
-public class Word
-{
-    public int wordOrder { get; set; }
-    public string wordText { get; set; }
-    public string wordId { get; set; }
-    public string partOfSpeech { get; set; }
-    public string wordKind { get; set; }
-    public string singPlur { get; set; }
-    public string wordCase { get; set; }
-}
-
-public void ModifyWords(List<Word> words)
-{
-    var prepositions = new[] { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
-    var specialNouns = new[] { "набор", "комплект", "каталог", "блок" };
-    
-    // Find first preposition if any
-    int prepIndex = words.FindIndex(w => prepositions.Contains(w.wordText));
-    
-    // Check if any noun exists
-    var hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
-    
-    if (!hasNoun) return; // No nouns, no changes needed
-    
-    if (prepIndex == -1) // No preposition found
-    {
-        ProcessWordList(words, specialNouns);
-    }
-    else
-    {
-        // Process words before preposition
-        var beforePrep = words.Take(prepIndex).ToList();
-        ProcessWordList(beforePrep, specialNouns);
-        
-        // Update original list with processed words before preposition
-        for (int i = 0; i < beforePrep.Count; i++)
-        {
-            words[i] = beforePrep[i];
-        }
-        
-        // Process words after preposition
-        var prepWord = words[prepIndex];
-        for (int i = prepIndex + 1; i < words.Count; i++)
-        {
-            if (new[] { "для", "от", "из" }.Contains(prepWord.wordText))
-                words[i].wordCase = "gent";
-            else if (new[] { "на", "под", "через" }.Contains(prepWord.wordText))
-                words[i].wordCase = "accs";
-            else if (prepWord.wordText == "в")
-                words[i].wordCase = "loct";
-            else if (prepWord.wordText == "с")
-                words[i].wordCase = "ablt";
-            else if (prepWord.wordText == "к")
-                words[i].wordCase = "datv";
-        }
-    }
-}
-
-private void ProcessWordList(List<Word> words, string[] specialNouns)
-{
-    var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
-    var nounCount = words.Count(w => w.partOfSpeech == "NOUN");
-    var hasAdjf = words.Any(w => w.partOfSpeech == "ADJF");
-    
-    if (nounCount == 1)
-    {
-        var noun = words.First(w => w.partOfSpeech == "NOUN");
-        foreach (var word in words.Where(w => w.partOfSpeech == "ADJF"))
-        {
-            word.wordKind = noun.wordKind;
-            word.wordCase = noun.wordCase;
-        }
-    }
-    else
-    {
-        if (!hasAdjf)
-        {
-            bool isSpecialNoun = firstWord != null && specialNouns.Contains(firstWord.wordText);
-            foreach (var word in words.Where(w => w.wordOrder != 0))
-            {
-                if (isSpecialNoun)
-                {
-                    word.wordKind = "masc";
-                    word.wordCase = "gent";
-                    word.singPlur = "plur";
-                }
-                else
-                {
-                    word.wordCase = "gent";
-                }
-            }
-        }
-        else
-        {
-            bool isSpecialNoun = firstWord != null && specialNouns.Contains(firstWord.wordText);
-            foreach (var word in words.Where(w => w.wordOrder != 0))
-            {
-                if (isSpecialNoun)
-                {
-                    word.wordKind = "masc";
-                    word.wordCase = "gent";
-                    word.singPlur = "plur";
-                }
-                else
-                {
-                    word.wordKind = firstWord.wordKind;
-                    word.wordCase = "gent";
-                    word.singPlur = firstWord.singPlur;
-                }
-            }
-        }
-    }
-}
 
 
 напиши функцию с названием ModifyWords на ЯП c# по следующему условию:
