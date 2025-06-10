@@ -1,4 +1,65 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+public class LemmaParser
+{
+    public static List<string> ParseLemma(string inputWord, string lemmaXml)
+    {
+        var result = new List<string>();
+
+        // Извлекаем все формы слова из XML
+        var forms = Regex.Matches(lemmaXml, @"<f t=""([^""]+)"">(.*?)</f>");
+        
+        foreach (Match form in forms)
+        {
+            string formWord = form.Groups[1].Value;
+            if (formWord == inputWord)
+            {
+                // Извлекаем теги для данной формы
+                var tags = Regex.Matches(form.Groups[2].Value, @"<g v=""([^""]+)""");
+                var tagList = tags.Cast<Match>().Select(t => t.Groups[1].Value).ToList();
+                
+                // Извлекаем основной тег части речи из lemma
+                string posTag = Regex.Match(lemmaXml, @"<l t=""[^""]+"">(.*?)</l>").Groups[1].Value;
+                posTag = Regex.Matches(posTag, @"<g v=""([^""]+)""").Cast<Match>()
+                    .Select(t => t.Groups[1].Value)
+                    .FirstOrDefault(t => t == "NOUN" || t == "ADJF") ?? "0000";
+
+                // Формируем базовую строку
+                string baseResult = $"{inputWord}-{posTag}";
+
+                // Добавляем грамматические теги
+                string caseTag = tagList.FirstOrDefault(t => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(t)) ?? "0000";
+                baseResult += $"-{caseTag}";
+
+                // Добавляем anim/inan
+                string animTag = tagList.Contains("anim") ? "anim" : tagList.Contains("inan") ? "inan" : "0000";
+                baseResult += $"-{animTag}";
+
+                // Добавляем род
+                string genderTag = tagList.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
+                baseResult += $"-{genderTag}";
+
+                // Добавляем число
+                string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
+                baseResult += $"-{numberTag}";
+
+                result.Add(baseResult);
+            }
+        }
+
+        return result;
+    }
+}
+
+
+
+
+
+
+using System;
 using System.Linq;
 using System.Xml.Linq;
 
