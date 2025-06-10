@@ -1,3 +1,18 @@
+напиши функцию, которая получает на вход объекты класса Word в виде List<Word> words = new List<Word>() с полями public int wordOrder; public string wordText;
+типичным объектом этого класса будет ("0" "пара")
+функция должна выписать в консоль все возможные комбинации слов в порядке их wordOrder
+то есть, если на вход идёт
+0 пар
+0 пара
+0 пара
+1 обувь
+То в консоль выведется:
+пар обувь
+пара обувь 
+пара обувь
+
+
+
 public bool IsRussian(string input)
 {
     if (string.IsNullOrEmpty(input))
