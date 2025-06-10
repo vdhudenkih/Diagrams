@@ -1,3 +1,34 @@
+public void PrintWordCombinations(List<Word> words)
+{
+    // Группируем слова по wordOrder
+    var groupedWords = words.GroupBy(w => w.wordOrder)
+                           .OrderBy(g => g.Key)
+                           .ToList();
+
+    // Список списков слов для каждого порядка
+    List<List<string>> wordGroups = groupedWords.Select(g => g.Select(w => w.wordText).ToList()).ToList();
+
+    // Рекурсивная функция для генерации комбинаций
+    void GenerateCombinations(List<string> currentCombo, int groupIndex)
+    {
+        if (groupIndex == wordGroups.Count)
+        {
+            Console.WriteLine(string.Join(" ", currentCombo));
+            return;
+        }
+
+        foreach (var word in wordGroups[groupIndex])
+        {
+            currentCombo.Add(word);
+            GenerateCombinations(currentCombo, groupIndex + 1);
+            currentCombo.RemoveAt(currentCombo.Count - 1);
+        }
+    }
+
+    GenerateCombinations(new List<string>(), 0);
+}
+
+
 напиши функцию, которая получает на вход объекты класса Word в виде List<Word> words = new List<Word>() с полями public int wordOrder; public string wordText;
 типичным объектом этого класса будет ("0" "пара")
 функция должна выписать в консоль все возможные комбинации слов в порядке их wordOrder
