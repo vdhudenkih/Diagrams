@@ -1,3 +1,17 @@
+некорректный вывод:
+на вход было дано
+wordOrder: 1, wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+ожидалось:
+wordOrder: 1, wordText: гаечных, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+получено:
+wordOrder: 1, wordText: гаечный, wordId: 65785, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
+строка файла словаря:
+<lemma id="65785" rev="65785"><l t="гаечный"><g v="ADJF"/><g v="Qual"/></l><f t="гаечный"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="гаечного"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="гаечному"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="гаечного"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="гаечный"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="гаечным"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="гаечном"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="гаечная"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="гаечной"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="гаечной"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="гаечную"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="гаечной"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="гаечною"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-oy"/></f><f t="гаечной"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="гаечное"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="гаечного"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="гаечному"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="гаечное"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="гаечным"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="гаечном"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="гаечные"><g v="plur"/><g v="nomn"/></f><f t="гаечных"><g v="plur"/><g v="gent"/></f><f t="гаечным"><g v="plur"/><g v="datv"/></f><f t="гаечных"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="гаечные"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="гаечными"><g v="plur"/><g v="ablt"/></f><f t="гаечных"><g v="plur"/><g v="loct"/></f></lemma>
+
+
+
+
+
 using System;
 using System.Collections.Generic;
 using System.IO;
