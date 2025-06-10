@@ -1,10 +1,107 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Xml.Linq;
 using System.Text.RegularExpressions;
 
-public class LemmaParser
+class Lemmatizer
 {
+    static void Main()
+    {
+        Console.WriteLine("Введите название материала: ");
+        string inputString = Console.ReadLine();
+        inputString= inputString.ToLower();
+        //Убираем все точки и запятые
+        inputString = inputString.Replace("|", "");
+        string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); //Разделяем строку в массив по пробелам
+        string[] lemmas=[];
+        List<Word> words = new List<Word>();
+        for (int i = 0; i < inputMaterials.Length; i++)
+        {
+            lemmas = SearchInDictionary(inputMaterials[i]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int j = 0; j < lemmas.Length; j++)
+            {
+                string[] list = lemmas[j].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                words.Add(new Word(i, list[0], list[1], list[2], list[3], list[4], list[5]));
+            }
+        }
+        
+        PrintWords(words);
+    }
+
+    static string SearchInDictionary(string word)
+    {
+        word = word.ToLower();
+        string[] dictionaryNumbers = ["", "ёаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя"];
+        string dictionaryNumber = "";
+        for (int i = 0; i < dictionaryNumbers.Length; i++)
+        {
+            if (dictionaryNumbers[i].Contains(word[0]))
+            {
+                dictionaryNumber += "-";
+                dictionaryNumber += i;
+            }
+        }
+        dictionaryNumber += "-17";
+        string[] foundDictionaries = dictionaryNumber.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+        string lemmas = "";
+        string filePath = "";
+        for (int i = 0; i < foundDictionaries.Length; i++)
+        {
+            filePath = "lemmas" + foundDictionaries[i] + ".txt";
+            string[] fileContent = ReadFileToLines(filePath);
+            string[] strSearch = FindAllContainingWord(fileContent, word);
+            for (int j = 0; j < strSearch.Length; j++)
+            {
+                lemmas += ParseLemma(word, strSearch[j])+" ";
+            }
+            Console.WriteLine(lemmas);
+            return lemmas;
+        }
+
+        return "не найдено";
+    }
+    public bool IsRussian(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return false;
+
+        foreach (char c in input)
+        {
+            // Проверяем, является ли символ русской буквой (диапазон Unicode для русского алфавита)
+            // или пробелом, или распространённым знаком препинания
+            if (!(c >= 'А' && c <= 'я' || c == 'ё' || c == 'Ё' || 
+                c == ' ' || c == ',' || c == '.' || c == '!' || 
+                c == '?' || c == '-' || c == ':' || c == ';'))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
+
+    static string[] ReadFileToLines(string path)
+    {
+        // Проверяем, существует ли файл
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"Файл не найден: {path}");
+
+        // Считываем все строки из файла в массив
+        return File.ReadAllLines(path);
+    }
+
+    static string[] FindAllContainingWord(string[] array, string word)
+    {
+        return array.Where(s => s.Contains("\"" + word + "\"")).ToArray();
+    }
+    
+    
+    public static void PrintWords(List<Word> words)
+    {
+        foreach (var w in words.OrderBy(w => w.wordOrder))
+        {
+            Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, partOfSpeech: {w.partOfSpeech}, wordCase: {w.wordCase}, animation: {w.animation} wordKind: {w.wordKind}, singPlur: {w.singPlur}");
+        }
+    }
     public static List<string> ParseLemma(string inputWord, string lemmaXml)
     {
         var result = new List<string>();
@@ -52,66 +149,32 @@ public class LemmaParser
 
         return result;
     }
+    
+    
 }
 
-
-
-
-
-
-using System;
-using System.Linq;
-using System.Xml.Linq;
-
-public class WordParser
+class Word
 {
-    public static string ParseWord(string word, string lemmaXml)
+    public int wordOrder;
+    public string wordText;
+    public string partOfSpeech;
+    public string wordCase;
+    public string animation;
+    public string wordKind;
+    public string singPlur;
+
+    public Word(int WordOrder, string WordText, string PartOfSpeech, string WordCase, string Animation, string WordKind, string SingPlur)
     {
-        try
-        {
-            // Parse XML
-            XElement lemma = XElement.Parse(lemmaXml);
-            
-            // Find the form matching the input word
-            var form = lemma.Elements("f")
-                .FirstOrDefault(f => f.Attribute("t")?.Value == word);
-            
-            if (form == null)
-                return "Word not found in lemma";
-
-            // Get lemma attributes
-            var lemmaAttrs = lemma.Element("l")?.Elements("g")
-                .Select(g => g.Attribute("v")?.Value)
-                .Where(v => v != null)
-                .ToList() ?? new List<string>();
-
-            // Get form attributes
-            var formAttrs = form.Elements("g")
-                .Select(g => g.Attribute("v")?.Value)
-                .Where(v => v != null)
-                .ToList() ?? new List<string>();
-
-            // Combine attributes
-            var allAttrs = lemmaAttrs.Concat(formAttrs).ToList();
-
-            // Ensure output has exactly 6 components
-            // Format: word-POS-case-animacy-gender-number
-            string pos = allAttrs.FirstOrDefault(a => new[] { "NOUN", "ADJF" }.Contains(a)) ?? "0000";
-            string caseAttr = allAttrs.FirstOrDefault(a => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(a)) ?? "0000";
-            string animacy = allAttrs.Contains("anim") ? "anim" : (allAttrs.Contains("inan") ? "inan" : "0000");
-            string gender = allAttrs.FirstOrDefault(a => new[] { "masc", "femn", "neut" }.Contains(a)) ?? "0000";
-            string number = allAttrs.FirstOrDefault(a => new[] { "sing", "plur" }.Contains(a)) ?? "0000";
-
-            return $"{word}-{pos}-{caseAttr}-{animacy}-{gender}-{number}";
-        }
-        catch (Exception ex)
-        {
-            return $"Error processing lemma: {ex.Message}";
-        }
+        wordOrder = WordOrder;
+        wordText = WordText;
+        partOfSpeech = PartOfSpeech;
+        wordKind = WordKind;
+        singPlur = SingPlur;
+        wordCase = WordCase;
+        animation = Animation;
+        
     }
 }
-
-
 
 
 
