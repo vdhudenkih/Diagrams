@@ -1,3 +1,66 @@
+public static string ParseLemma(string word, string lemmaXml)
+    {
+        // Извлекаем лемму (основную форму слова)
+        string lemmaPattern = @"<l t=""([^""]+)"">";
+        string lemma = Regex.Match(lemmaXml, lemmaPattern).Groups[1].Value;
+
+        // Извлекаем все теги <g> для леммы
+        string lemmaTagsPattern = @"<l t=""[^""]+"">((?:<g v=""[^""]+""/>\s*)*)";
+        var lemmaTagsMatch = Regex.Match(lemmaXml, lemmaTagsPattern);
+        string[] lemmaTags = Regex.Matches(lemmaTagsMatch.Groups[1].Value, @"<g v=""([^""]+)""/>")
+            .Cast<Match>()
+            .Select(m => m.Groups[1].Value)
+            .ToArray();
+
+        // Ищем форму слова, соответствующую входному слову
+        string formPattern = $@"<f t=""{Regex.Escape(word)}"">((?:<g v=""[^""]+""/>\s*)*)</f>";
+        var formMatch = Regex.Match(lemmaXml, formPattern);
+        if (!formMatch.Success)
+            return null;
+
+        // Извлекаем теги формы
+        string[] formTags = Regex.Matches(formMatch.Groups[1].Value, @"<g v=""([^""]+)""/>")
+            .Cast<Match>()
+            .Select(m => m.Groups[1].Value)
+            .ToArray();
+
+        // Объединяем теги
+        string[] allTags = lemmaTags.Concat(formTags).Distinct().ToArray();
+
+        // Формируем результат
+        // Порядок: лемма, теги леммы, теги формы
+        // Если нет anim/inan или masc/femn/neut, вставляем 0000
+        string result = lemma;
+
+        // Добавляем теги леммы (NOUN, ADJF и т.д.)
+        if (allTags.Contains("NOUN") || allTags.Contains("ADJF"))
+            result += "-" + (allTags.Contains("NOUN") ? "NOUN" : "ADJF");
+
+        // Добавляем падеж (nomn, gent, datv и т.д.)
+        string[] cases = { "nomn", "gent", "datv", "accs", "ablt", "loct" };
+        string caseTag = cases.FirstOrDefault(c => allTags.Contains(c)) ?? "";
+        if (!string.IsNullOrEmpty(caseTag))
+            result += "-" + caseTag;
+
+        // Проверяем наличие anim/inan
+        string animTag = allTags.Contains("anim") ? "anim" : allTags.Contains("inan") ? "inan" : "0000";
+        result += "-" + animTag;
+
+        // Проверяем род (masc/femn/neut)
+        string[] genders = { "masc", "femn", "neut" };
+        string genderTag = genders.FirstOrDefault(g => allTags.Contains(g)) ?? "0000";
+        result += "-" + genderTag;
+
+        // Добавляем число (sing/plur)
+        string numberTag = allTags.Contains("sing") ? "sing" : allTags.Contains("plur") ? "plur" : "";
+        if (!string.IsNullOrEmpty(numberTag))
+            result += "-" + numberTag;
+
+        return result;
+    }
+
+
+
 напиши функцию на ЯП c# по следующему условию:
 на вход подаётся строка вида "мешки", строка вида <lemma id="159552" rev="159552"><l t="мешок"><g v="NOUN"/><g v="anim"/><g v="masc"/></l><f t="мешок"><g v="sing"/><g v="nomn"/></f><f t="мешка"><g v="sing"/><g v="gent"/></f><f t="мешку"><g v="sing"/><g v="datv"/></f><f t="мешка"><g v="sing"/><g v="accs"/></f><f t="мешком"><g v="sing"/><g v="ablt"/></f><f t="мешке"><g v="sing"/><g v="loct"/></f><f t="мешки"><g v="plur"/><g v="nomn"/></f><f t="мешков"><g v="plur"/><g v="gent"/></f><f t="мешкам"><g v="plur"/><g v="datv"/></f><f t="мешков"><g v="plur"/><g v="accs"/></f><f t="мешками"><g v="plur"/><g v="ablt"/></f><f t="мешках"><g v="plur"/><g v="loct"/></f></lemma>
 на выходе должно быть получено: мешок-NOUN-nomn-anim-masc-plur
