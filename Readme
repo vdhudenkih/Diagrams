@@ -1,3 +1,151 @@
+public static class WordModifier
+{
+    public static void ModifyWords(List<Word> words)
+    {
+        var prepositions = new[] { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+        var specialNouns = new[] { "набор", "комплект", "каталог", "блок" };
+        
+        // Find first preposition and its index
+        int prepIndex = words.FindIndex(w => prepositions.Contains(w.wordText));
+        bool hasPreposition = prepIndex != -1;
+        
+        // Find noun and adjective counts
+        bool hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
+        bool hasAdjective = words.Any(w => w.partOfSpeech == "ADJF");
+        bool isSpecialFirstNoun = words.Any(w => w.wordOrder == 0 && specialNouns.Contains(w.wordText));
+
+        if (!hasPreposition)
+        {
+            ProcessWordList(words, hasNoun, hasAdjective, isSpecialFirstNoun);
+        }
+        else
+        {
+            // Process words before preposition
+            var wordsBeforePrep = words.Take(prepIndex).ToList();
+            ProcessWordList(wordsBeforePrep, 
+                wordsBeforePrep.Any(w => w.partOfSpeech == "NOUN"),
+                wordsBeforePrep.Any(w => w.partOfSpeech == "ADJF"),
+                wordsBeforePrep.Any(w => w.wordOrder == 0 && specialNouns.Contains(w.wordText)));
+
+            // Process words after preposition
+            var wordsAfterPrep = words.Skip(prepIndex + 1).ToList();
+            var prepWord = words[prepIndex].wordText;
+
+            if (new[] { "для", "от", "из" }.Contains(prepWord))
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "gent";
+                }
+            }
+            else if (new[] { "на", "под", "через" }.Contains(prepWord))
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "accs";
+                }
+            }
+            else if (prepWord == "в")
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "loct";
+                }
+            }
+            else if (prepWord == "с")
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "ablt";
+                }
+            }
+            else if (prepWord == "к")
+            {
+                foreach (var word in wordsAfterPrep)
+                {
+                    word.wordCase = "datv";
+                }
+            }
+        }
+    }
+
+    private static void ProcessWordList(List<Word> words, bool hasNoun, bool hasAdjective, bool isSpecialFirstNoun)
+    {
+        if (!hasNoun) return;
+
+        var firstNoun = words.FirstOrDefault(w => w.partOfSpeech == "NOUN");
+        
+        if (!hasAdjective)
+        {
+            if (!isSpecialFirstNoun)
+            {
+                foreach (var word in words.Where(w => w.wordOrder != 0))
+                {
+                    word.wordCase = "gent";
+                }
+            }
+            else
+            {
+                foreach (var word in words.Where(w => w.wordOrder != 0))
+                {
+                    word.wordKind = "masc";
+                    word.wordCase = "gent";
+                    word.singPlur = "plur";
+                }
+            }
+        }
+        else
+        {
+            if (isSpecialFirstNoun)
+            {
+                foreach (var word in words.Where(w => w.wordOrder != 0))
+                {
+                    word.wordKind = "masc";
+                    word.wordCase = "gent";
+                    word.singPlur = "plur";
+                }
+            }
+            else
+            {
+                var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+                if (firstWord != null)
+                {
+                    foreach (var word in words.Where(w => w.wordOrder != 0))
+                    {
+                        word.wordKind = firstWord.wordKind;
+                        word.wordCase = "gent";
+                        word.singPlur = firstWord.singPlur;
+                    }
+                }
+            }
+        }
+
+        // Handle adjectives when only one noun exists
+        if (hasNoun && words.Count(w => w.partOfSpeech == "NOUN") == 1)
+        {
+            foreach (var word in words.Where(w => w.partOfSpeech == "ADJF"))
+            {
+                word.wordKind = firstNoun.wordKind;
+                word.wordCase = firstNoun.wordCase;
+            }
+        }
+    }
+}
+
+public class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string wordId;
+    public string partOfSpeech;
+    public string wordKind;
+    public string singPlur;
+    public string wordCase;
+}
+
+
+
+
 public class Word
 {
     public int wordOrder { get; set; }
