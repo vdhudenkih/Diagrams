@@ -57,6 +57,183 @@ class Lemmatizer
 
         if (!dictionaryIndices.Any())
         {
+            dictionaryIndices.Add("17"); // Default dictionary
+        }
+
+        List<string> lemmas = new List<string>();
+        foreach (var index in dictionaryIndices)
+        {
+            string filePath = $"lemmas{index}.txt";
+            try
+            {
+                string[] fileContent = ReadFileToLines(filePath);
+                string[] strSearch = FindAllContainingWord(fileContent, word);
+                lemmas.AddRange(strSearch.SelectMany(line => ParseLemma(word, line)));
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine($"Файл не найден: {filePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при обработке файла {filePath}: {ex.Message}");
+            }
+        }
+
+        return lemmas.Any() ? lemmas : new List<string> { "не найдено" };
+    }
+
+    static string[] ReadFileToLines(string path)
+    {
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"Файл не найден: {path}");
+
+        return File.ReadAllLines(path);
+    }
+
+    static string[] FindAllContainingWord(string[] array, string word)
+    {
+        return array.Where(s => s.Contains($"\"{word}\"")).ToArray();
+    }
+
+    static void PrintWords(List<Word> words)
+    {
+        foreach (var w in words.OrderBy(w => w.wordOrder))
+        {
+            Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, partOfSpeech: {w.partOfSpeech}, wordCase: {w.wordCase}, animation: {w.animation}, wordKind: {w.wordKind}, singPlur: {w.singPlur}");
+        }
+    }
+
+    static List<string> ParseLemma(string inputWord, string lemmaXml)
+    {
+        var result = new List<string>();
+        try
+        {
+            XDocument doc = XDocument.Parse($"<root>{lemmaXml}</root>");
+            var forms = doc.Descendants("f");
+
+            foreach (var form in forms)
+            {
+                string formWord = form.Attribute("t")?.Value;
+                if (formWord == inputWord)
+                {
+                    var tags = form.Descendants("g").Select(g => g.Attribute("v")?.Value).ToList();
+                    var posTag = doc.Descendants("l").Descendants("g")
+                        .Select(g => g.Attribute("v")?.Value)
+                        .FirstOrDefault(t => t == "NOUN" || t == "ADJF") ?? "0000";
+
+                    string baseResult = $"{inputWord}-{posTag}";
+                    string caseTag = tags.FirstOrDefault(t => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(t)) ?? "0000";
+                    baseResult += $"-{caseTag}";
+
+                    string animTag = tags.Contains("anim") ? "anim" : tags.Contains("inan") ? "inan" : "0000";
+                    baseResult += $"-{animTag}";
+
+                    string genderTag = tags.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
+                    baseResult += $"-{genderTag}";
+
+                    string numberTag = tags.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
+                    baseResult += $"-{numberTag}";
+
+                    result.Add(baseResult);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при парсинге XML: {ex.Message}");
+        }
+
+        return result;
+    }
+}
+
+class Word
+{
+    public int wordOrder;
+    public string wordText;
+    public string partOfSpeech;
+    public string wordCase;
+    public string animation;
+    public string wordKind;
+    public string singPlur;
+
+    public Word(int wordOrder, string wordText, string partOfSpeech, string wordCase, string animation, string wordKind, string singPlur)
+    {
+        this.wordOrder = wordOrder;
+        this.wordText = wordText;
+        this.partOfSpeech = partOfSpeech;
+        this.wordCase = wordCase;
+        this.animation = animation;
+        this.wordKind = wordKind;
+        this.singPlur = singPlur;
+    }
+}
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+
+class Lemmatizer
+{
+    static void Main()
+    {
+        Console.WriteLine("Введите название материала: ");
+        string inputString = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(inputString))
+        {
+            Console.WriteLine("Ошибка: Введена пустая строка.");
+            return;
+        }
+
+        inputString = inputString.ToLower().Replace("|", "");
+        string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        List<Word> words = new List<Word>();
+
+        foreach (var material in inputMaterials)
+        {
+            var lemmas = SearchInDictionary(material);
+            foreach (var lemma in lemmas)
+            {
+                string[] list = lemma.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                if (list.Length >= 6)
+                {
+                    words.Add(new Word(words.Count, list[0], list[1], list[2], list[3], list[4], list[5]));
+                }
+            }
+        }
+
+        PrintWords(words);
+    }
+
+    static List<string> SearchInDictionary(string word)
+    {
+        if (string.IsNullOrEmpty(word))
+            return new List<string> { "не найдено" };
+
+        word = word.ToLower();
+        string[] dictionaryNumbers = ["", "ёаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя"];
+        List<string> dictionaryIndices = new List<string>();
+
+        for (int i = 0; i < dictionaryNumbers.Length; i++)
+        {
+            if (dictionaryNumbers[i].Contains(word[0]))
+            {
+                dictionaryIndices.Add(i.ToString());
+            }
+        }
+
+        if (!dictionaryIndices.Any())
+        {
             dictionaryIndices.Add("17
 
 
