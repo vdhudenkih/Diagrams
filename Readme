@@ -1,3 +1,14 @@
+public void ToUpperCaseWords(List<Word> words)
+{
+    foreach (var word in words)
+    {
+        word.wordText = word.wordText.ToUpper();
+    }
+}
+
+
+
+
 
 напиши функцию, которая получает на вход объекты класса Word в виде List<Word> words = new List<Word>() с полями public int wordOrder; public string wordText;
 типичным объектом этого класса будет ("0" "пара")
