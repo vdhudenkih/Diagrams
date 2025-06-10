@@ -1,3 +1,66 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+
+class Lemmatizer
+{
+    static void Main()
+    {
+        Console.WriteLine("Введите название материала: ");
+        string inputString = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(inputString))
+        {
+            Console.WriteLine("Ошибка: Введена пустая строка.");
+            return;
+        }
+
+        inputString = inputString.ToLower().Replace("|", "");
+        string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        List<Word> words = new List<Word>();
+
+        foreach (var material in inputMaterials)
+        {
+            var lemmas = SearchInDictionary(material);
+            foreach (var lemma in lemmas)
+            {
+                string[] list = lemma.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                if (list.Length >= 6)
+                {
+                    words.Add(new Word(words.Count, list[0], list[1], list[2], list[3], list[4], list[5]));
+                }
+            }
+        }
+
+        PrintWords(words);
+    }
+
+    static List<string> SearchInDictionary(string word)
+    {
+        if (string.IsNullOrEmpty(word))
+            return new List<string> { "не найдено" };
+
+        word = word.ToLower();
+        string[] dictionaryNumbers = ["", "ёаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя"];
+        List<string> dictionaryIndices = new List<string>();
+
+        for (int i = 0; i < dictionaryNumbers.Length; i++)
+        {
+            if (dictionaryNumbers[i].Contains(word[0]))
+            {
+                dictionaryIndices.Add(i.ToString());
+            }
+        }
+
+        if (!dictionaryIndices.Any())
+        {
+            dictionaryIndices.Add("17
+
+
+
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 
