@@ -1,3 +1,118 @@
+public class Word
+{
+    public int wordOrder { get; set; }
+    public string wordText { get; set; }
+    public string wordId { get; set; }
+    public string partOfSpeech { get; set; }
+    public string wordKind { get; set; }
+    public string singPlur { get; set; }
+    public string wordCase { get; set; }
+}
+
+public void ModifyWords(List<Word> words)
+{
+    var prepositions = new[] { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
+    var specialNouns = new[] { "набор", "комплект", "каталог", "блок" };
+    
+    // Find first preposition if any
+    int prepIndex = words.FindIndex(w => prepositions.Contains(w.wordText));
+    
+    // Check if any noun exists
+    var hasNoun = words.Any(w => w.partOfSpeech == "NOUN");
+    
+    if (!hasNoun) return; // No nouns, no changes needed
+    
+    if (prepIndex == -1) // No preposition found
+    {
+        ProcessWordList(words, specialNouns);
+    }
+    else
+    {
+        // Process words before preposition
+        var beforePrep = words.Take(prepIndex).ToList();
+        ProcessWordList(beforePrep, specialNouns);
+        
+        // Update original list with processed words before preposition
+        for (int i = 0; i < beforePrep.Count; i++)
+        {
+            words[i] = beforePrep[i];
+        }
+        
+        // Process words after preposition
+        var prepWord = words[prepIndex];
+        for (int i = prepIndex + 1; i < words.Count; i++)
+        {
+            if (new[] { "для", "от", "из" }.Contains(prepWord.wordText))
+                words[i].wordCase = "gent";
+            else if (new[] { "на", "под", "через" }.Contains(prepWord.wordText))
+                words[i].wordCase = "accs";
+            else if (prepWord.wordText == "в")
+                words[i].wordCase = "loct";
+            else if (prepWord.wordText == "с")
+                words[i].wordCase = "ablt";
+            else if (prepWord.wordText == "к")
+                words[i].wordCase = "datv";
+        }
+    }
+}
+
+private void ProcessWordList(List<Word> words, string[] specialNouns)
+{
+    var firstWord = words.FirstOrDefault(w => w.wordOrder == 0);
+    var nounCount = words.Count(w => w.partOfSpeech == "NOUN");
+    var hasAdjf = words.Any(w => w.partOfSpeech == "ADJF");
+    
+    if (nounCount == 1)
+    {
+        var noun = words.First(w => w.partOfSpeech == "NOUN");
+        foreach (var word in words.Where(w => w.partOfSpeech == "ADJF"))
+        {
+            word.wordKind = noun.wordKind;
+            word.wordCase = noun.wordCase;
+        }
+    }
+    else
+    {
+        if (!hasAdjf)
+        {
+            bool isSpecialNoun = firstWord != null && specialNouns.Contains(firstWord.wordText);
+            foreach (var word in words.Where(w => w.wordOrder != 0))
+            {
+                if (isSpecialNoun)
+                {
+                    word.wordKind = "masc";
+                    word.wordCase = "gent";
+                    word.singPlur = "plur";
+                }
+                else
+                {
+                    word.wordCase = "gent";
+                }
+            }
+        }
+        else
+        {
+            bool isSpecialNoun = firstWord != null && specialNouns.Contains(firstWord.wordText);
+            foreach (var word in words.Where(w => w.wordOrder != 0))
+            {
+                if (isSpecialNoun)
+                {
+                    word.wordKind = "masc";
+                    word.wordCase = "gent";
+                    word.singPlur = "plur";
+                }
+                else
+                {
+                    word.wordKind = firstWord.wordKind;
+                    word.wordCase = "gent";
+                    word.singPlur = firstWord.singPlur;
+                }
+            }
+        }
+    }
+}
+
+
 напиши функцию с названием ModifyWords на ЯП c# по следующему условию:
 на вход подаётся List<Word> words
 программа считывает все объекты класса Word с параметрами:
