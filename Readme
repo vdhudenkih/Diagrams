@@ -1,162 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-public class Word
-{
-    public int wordOrder;
-    public string wordText;
-    public string wordId;
-    public string partOfSpeech;
-    public string wordKind;
-    public string singPlur;
-    public string wordCase;
-
-    public Word(int order, string text, string id, string pos, string kind, string plur, string wCase)
-    {
-        wordOrder = order;
-        wordText = text;
-        wordId = id;
-        partOfSpeech = pos;
-        wordKind = kind;
-        singPlur = plur;
-        wordCase = wCase;
-    }
-}
-
-public class Program
-{
-    public static void ModifyWords(List<Word> words)
-    {
-        // Предлоги, при наличии которых функция ничего не делает
-        var prepositions = new HashSet<string> { "для", "от", "из", "к", "с", "в", "на", "под", "через" };
-        bool hasPreposition = words.Any(w => prepositions.Contains(w.wordText));
-
-        // Список NOUN и ADJF
-        var nouns = words.Where(w => w.partOfSpeech == "NOUN").ToList();
-        var adjfs = words.Where(w => w.partOfSpeech == "ADJF").ToList();
-
-        if (nouns.Count >= 1 && !hasPreposition)
-        {
-            // Если ровно один NOUN
-            if (nouns.Count == 1)
-            {
-                // Копируем wordKind и wordCase NOUN к ADJF
-                var noun = nouns[0];
-                foreach (var adjf in adjfs)
-                {
-                    adjf.wordKind = noun.wordKind;
-                    adjf.wordCase = noun.wordCase;
-                }
-            }
-            else
-            {
-                // NOUN больше одного
-                var zeroWord = words.FirstOrDefault(w => w.wordOrder == 0);
-                bool zeroWordIsSpecial = zeroWord != null && 
-                                         (zeroWord.wordText == "набор" || zeroWord.wordText == "комплект" ||
-                                          zeroWord.wordText == "каталог" || zeroWord.wordText == "блок");
-
-                if (adjfs.Count == 0)
-                {
-                    // Нет ADJF
-                    if (!zeroWordIsSpecial)
-                    {
-                        // Изменяем wordCase всех, кроме wordOrder==0, на "gent"
-                        foreach (var w in words.Where(w => w.wordOrder != 0))
-                        {
-                            w.wordCase = "gent";
-                        }
-                    }
-                    else
-                    {
-                        // Изменяем wordKind, wordCase, singPlur всех, кроме wordOrder==0
-                        foreach (var w in words.Where(w => w.wordOrder != 0))
-                        {
-                            w.wordKind = "masc";
-                            w.wordCase = "gent";
-                            w.singPlur = "plur";
-                        }
-                    }
-                }
-                else
-                {
-                    // Есть ADJF
-                    if (zeroWordIsSpecial)
-                    {
-                        // Изменяем wordKind, wordCase, singPlur всех, кроме wordOrder==0
-                        foreach (var w in words.Where(w => w.wordOrder != 0))
-                        {
-                            w.wordKind = "masc";
-                            w.wordCase = "gent";
-                            w.singPlur = "plur";
-                        }
-                    }
-                    else
-                    {
-                        // Изменяем wordKind, wordCase, singPlur всех, кроме wordOrder==0 на значения wordOrder==0
-                        // Затем wordCase всех, кроме wordOrder==0, меняем на "gent"
-                        foreach (var w in words.Where(w => w.wordOrder != 0))
-                        {
-                            w.wordKind = zeroWord.wordKind;
-                            w.singPlur = zeroWord.singPlur;
-                            // Сначала присваиваем исходный wordCase
-                            w.wordCase = zeroWord.wordCase;
-                        }
-                        // Потом меняем wordCase на "gent"
-                        foreach (var w in words.Where(w => w.wordOrder != 0))
-                        {
-                            w.wordCase = "gent";
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static void Main()
-    {
-        List<Word> words = new List<Word>
-        {
-            new Word(0, "набор", "166595", "NOUN", "masc", "sing", "nomn"),
-            new Word(1, "сварочный", "314735", "ADJF", "femn", "sing", "nomn"),
-            new Word(2, "аппарат", "15358", "NOUN", "femn", "sing", "nomn")
-        };
-
-        ModifyWords(words);
-
-        foreach (var w in words.OrderBy(w => w.wordOrder))
-        {
-            Console.WriteLine($"wordOrder: {w.wordOrder}, wordText: {w.wordText}, wordId: {w.wordId}, partOfSpeech: {w.partOfSpeech}, wordKind: {w.wordKind}, singPlur: {w.singPlur}, wordCase: {w.wordCase}");
-        }
-    }
-}
-
-
-
-
-
-
-
-некорректный вывод:
-ожидалось:
-    wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
-    
-    wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: plur, wordCase: gent
-    
-    wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: plur, wordCase: gent
-получено:
-    wordOrder: 0, wordText: набор, wordId: 166595, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: nomn
-    
-    wordOrder: 1, wordText: сварочный, wordId: 314735, partOfSpeech: ADJF, wordKind: masc, singPlur: sing, wordCase: nomn
-    
-    wordOrder: 2, wordText: аппарат, wordId: 15358, partOfSpeech: NOUN, wordKind: masc, singPlur: sing, wordCase: gent
-
-
-
-
-возможно некорректный алгоритм
-
 напиши функцию с названием ModifyWords на ЯП c# по следующему условию:
 на вход подаётся List<Word> words
 программа считывает все объекты класса Word с параметрами:
@@ -203,5 +44,66 @@ public string wordCase;
             }
         }
         }
+}
+иначе:
+{
+    для всех объектов ДО обьекта с параметром (wordText="для" или "от" или "из" или "к" или "с" или "в" или "на" или "под" или "через") выполнить:
+    {
+    если нет других объектов с параметром partOfSpeech=NOUN 
+        то:{
+            изменить (параметры wordKind и wordCase на равные аналогичным у объекта с параметром NOUN) у всех объектов, где параметр partOfSpeech=ADJF 
+            }
+        иначе:
+            {
+            Если нет объектов с параметром ADJF:
+            то:
+                {
+                    если не (объект с параметром wordOrder==0 имеет параметр wordText= "набор" или "комплект" или "каталог" или "блок")
+                    то:{
+                        изменить параметры wordCase всех объектов, кроме объекта с параметром wordOrder==0, на wordCase="gent"
+                        }
+                    иначе:
+                        {
+                        изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на (wordKind="masc" и wordCase="gent" и singPlur="plur")
+                        }
+                }
+            Иначе:
+            {
+                если (объект с параметром wordOrder==0 имеет параметр wordText= "набор" или "комплект" или "каталог" или "блок")
+                то:
+                {
+                    изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на  wordKind="masc" и wordCase="gent" и singPlur="plur"
+                }
+                иначе:
+                {
+                    изменить параметры (wordKind и wordCase и singPlur всех объектов, кроме объекта с параметром wordOrder==0), на  равные объекту с параметром wordOrder==0
+                    изменить параметр (wordCase всех объектов, кроме объекта с параметром wordOrder==0), на wordCase="gent"
+                }
+            }
+        }
+    }
+    для всех объектов ПОСЛЕ обьекта с параметром (wordText="для" или "от" или "из" или "к" или "с" или "в" или "на" или "под" или "через") выполнить:
+    {
+        Если найден объект с параметром (wordText="для" или "от" или "из")
+        {
+            Изменить параметры (wordCase на wordCase="gent") всех объектов, следующих после объекта с параметром (wordText="для" или "от" или "из")
+        }
+        Иначе если найден объект с параметром (wordText="на" или "под" или "через")
+        {
+            Изменить параметры (wordCase на wordCase="accs") всех объектов, следующих после объекта с параметром (wordText="на" или "под" или "через")
+        }
+        Иначе если найден объект с параметром (wordText="в")
+        {
+            Изменить параметры (wordCase на wordCase="loct") всех объектов, следующих после объекта с параметром (wordText="в")
+        }
+        Иначе если найден объект с параметром (wordText="с")
+        {
+            Изменить параметры (wordCase на wordCase="ablt") всех объектов, следующих после объекта с параметром (wordText="с")
+        }
+        Иначе если найден объект с параметром (wordText="к")
+        {
+            Изменить параметры (wordCase на wordCase="datv") всех объектов, следующих после объекта с параметром (wordText="к")
+        }
+    }
 }
 
