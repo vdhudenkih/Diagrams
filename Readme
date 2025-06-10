@@ -1,3 +1,9 @@
+public class Word
+{
+    public int wordOrder;
+    public string wordText;
+}
+
 public void PrintWordCombinations(List<Word> words)
 {
     // Группируем слова по wordOrder
