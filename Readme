@@ -1,16 +1,4 @@
-почему программа не записывает ничего в файл
-
-
-try
-        {
-            StreamWriter sw = File.AppendText("output.txt");
-            sw.Write(FormatWords(words) + " " + ProcessWords(words)+"\n");
-            RunCommand("git", "add -A");
-            RunCommand("git", "commit -m \"Обновление output.txt\"");
-            //RunCommand("git", "pull origin main");
-            RunCommand("git", "push origin main");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Произошла ошибка: {ex.Message}");
-        }
+напиши функцию на ЯП C# по следующему условию:
+на вход подаётся текстовый файл, путь которого "input.txt"
+функция считывает его построчно, после чего обрезает все символы, следующее после символа "\"
+на выход программа даёт массив строк
