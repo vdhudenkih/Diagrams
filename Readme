@@ -1,20 +1,16 @@
-в чем может быть проблема?
-@vdhudenkih ➜ /workspaces/NLP (0e6ba83) $ git add -A
-@vdhudenkih ➜ /workspaces/NLP (0e6ba83) $ git reset HEAD output.txt
-@vdhudenkih ➜ /workspaces/NLP (0e6ba83) $ git commit -m "Изменение"
-[detached HEAD 9bd9095] Изменение
- 1 file changed, 4 insertions(+)
+почему программа не записывает ничего в файл
 
-@vdhudenkih ➜ /workspaces/NLP (9bd9095) $ git rebase --abort
-@vdhudenkih ➜ /workspaces/NLP (main) $ git pull origin main
-From https://github.com/CasualMe/NLP
- * branch            main       -> FETCH_HEAD
-Auto-merging Project/bin/Debug/net8.0/output.txt
-CONFLICT (content): Merge conflict in Project/bin/Debug/net8.0/output.txt
-error: could not apply eeb3ae4... Обновление output.txt
-hint: Resolve all conflicts manually, mark them as resolved with
-hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
-hint: You can instead skip this commit: run "git rebase --skip".
-hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
-hint: Disable this message with "git config set advice.mergeConflict false"
-Could not apply eeb3ae4... Обновление output.txt
+
+try
+        {
+            StreamWriter sw = File.AppendText("output.txt");
+            sw.Write(FormatWords(words) + " " + ProcessWords(words)+"\n");
+            RunCommand("git", "add -A");
+            RunCommand("git", "commit -m \"Обновление output.txt\"");
+            //RunCommand("git", "pull origin main");
+            RunCommand("git", "push origin main");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Произошла ошибка: {ex.Message}");
+        }
