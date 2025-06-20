@@ -115,3 +115,49 @@
 то есть для строки "ЛИСТ НИЖНИЙ\\\ФГГЖР-850.0700-003" получится "ЛИСТ НИЖНИЙ"
 после этого программа должна удалить все строки, где есть следующие символы:.-
 результат программы: печать итоговых строк
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        List<string> lines = new List<string>();
+
+        // Считываем строки с консоли, пока не будет пустая строка
+        string input;
+        while (!string.IsNullOrEmpty(input = Console.ReadLine()))
+        {
+            lines.Add(input);
+        }
+
+        List<string> processedLines = new List<string>();
+
+        foreach (var line in lines)
+        {
+            // Удаляем все после первого символа '\'
+            int index = line.IndexOf('\\');
+            string trimmed = index >= 0 ? line.Substring(0, index) : line;
+
+            // Убираем пробелы в начале и конце (если нужно)
+            trimmed = trimmed.Trim();
+
+            // Проверяем наличие символов '.' или '-'
+            if (!trimmed.Contains('.') && !trimmed.Contains('-'))
+            {
+                processedLines.Add(trimmed);
+            }
+        }
+
+        // Вывод результата
+        foreach (var line in processedLines)
+        {
+            Console.WriteLine(line);
+        }
+    }
+}
