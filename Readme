@@ -2,3 +2,34 @@
 на вход подаётся текстовый файл, путь которого "input.txt"
 функция считывает его построчно, после чего обрезает все символы, следующее после символа "\"
 на выход программа даёт массив строк
+
+
+
+using System;
+using System.IO;
+
+class Program
+{
+    static string[] ProcessFile(string filePath)
+    {
+        var lines = File.ReadAllLines(filePath);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            int index = lines[i].IndexOf('\\');
+            if (index >= 0)
+            {
+                lines[i] = lines[i].Substring(0, index);
+            }
+        }
+        return lines;
+    }
+
+    static void Main()
+    {
+        string[] result = ProcessFile("input.txt");
+        foreach (var line in result)
+        {
+            Console.WriteLine(line);
+        }
+    }
+}
