@@ -33,3 +33,45 @@ class Program
         }
     }
 }
+
+
+
+
+string[] testData = ProcessFile("input.txt");
+        float countNotDictionary = 0;
+        float countWords = 0;
+        for (int test = 0; test < testData.Length; test++)
+        {
+            string inputString = testData[test];
+            inputString = inputString.ToLower();
+            inputString = inputString.Replace("-", " ");
+            inputString = inputString.Replace("(", " ");
+            inputString = inputString.Replace(")", " ");
+            inputString = inputString.Replace("|", "");
+            string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); //Разделяем строку в массив по пробелам
+            string[] lemmas;
+            List<Word> words = new List<Word>();
+            for (int i = 0; i < inputMaterials.Length; i++)
+            {
+                lemmas = SearchInDictionary(inputMaterials[i]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                for (int j = 0; j < lemmas.Length; j++)
+                {
+                    string[] list = lemmas[j].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    //Указанные ниже буквы нужно исключить ввиду засорения вывода программы, из-за наличия огромного количества их одинаковых форм. Такие символы обычно встечаются в формате сокращений с цифрами. Например: 2-ух, 2-х, 8-ми, 9-ти
+                    if (list.Length >= 6 && list[1] != "х" && list[1] != "ми" && list[1] != "ти" && list[1] != "ух")
+                    {
+                        words.Add(new Word(list[0], i, list[1], list[2], list[3], list[4], list[5], list[6]));
+                        countWords++;
+                    }
+                    else
+                    {
+                        //Если не нужна обработка ошибок
+                        words.Add(new Word("999999" + i, i, inputMaterials[i], "0000", "0000", "0000", "0000", "0000"));
+                        countNotDictionary++;
+                        countWords++;
+                        break;
+                    }
+                }
+           }
+        }
+        Console.WriteLine(countNotDictionary/countWords);
