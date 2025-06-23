@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.4">
   <diagram name="Страница — 1" id="jLnOedMRefn1-FSvZcaY">
-    <mxGraphModel dx="2299" dy="821" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2614" dy="997" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -80,7 +80,7 @@
           <mxGeometry x="64.5" y="1220" width="10" height="180" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--25" value="GenerateCombinationsHelper" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="2810" y="29" width="170" height="1761" as="geometry" />
+          <mxGeometry x="2870" y="29" width="170" height="1761" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--82" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--25">
           <mxGeometry x="80" y="1271" width="10" height="80" as="geometry" />
@@ -204,7 +204,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mPj6bC7QtBjY4IhfVBW--80" value="двумерный массив, содержащий информацию о вариантах расположения по каждому слову" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--79" parent="1" source="mPj6bC7QtBjY4IhfVBW--23">
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--80" value="двумерный массив, содержащий информацию о вариантах расположения по каждому слову, в зависимости от wordId" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--79" parent="1" source="mPj6bC7QtBjY4IhfVBW--23">
           <mxGeometry x="-0.0001" relative="1" as="geometry">
             <mxPoint x="2415" y="1135" as="sourcePoint" />
             <mxPoint as="offset" />
@@ -215,7 +215,7 @@
             <mxPoint x="2415" y="1205" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mPj6bC7QtBjY4IhfVBW--83" value="двумерный массив, &lt;br&gt;содержащий информацию о возможных вариантах расположения" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--82" parent="1" source="mPj6bC7QtBjY4IhfVBW--24">
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--83" value="двумерный массив, &lt;br&gt;содержащий информацию о возможных вариантах расположения по wordOrder" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--82" parent="1" source="mPj6bC7QtBjY4IhfVBW--24">
           <mxGeometry x="-0.0031" relative="1" as="geometry">
             <mxPoint x="2669" y="1205" as="sourcePoint" />
             <mxPoint as="offset" />
