@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.4">
   <diagram name="Страница — 1" id="jLnOedMRefn1-FSvZcaY">
-    <mxGraphModel dx="3955" dy="1745" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2912" dy="1163" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -188,12 +188,12 @@
             <mxPoint x="1300" y="905" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mPj6bC7QtBjY4IhfVBW--71" value="индекс слова из словаря и текст слова" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--70" parent="1" source="mPj6bC7QtBjY4IhfVBW--23">
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--71" value="индексы слов из словаря и тексты слов" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--70" parent="1" source="mPj6bC7QtBjY4IhfVBW--23">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="2052" y="875" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mPj6bC7QtBjY4IhfVBW--72" value="строка, содержащая лемму слова" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=0;exitY=1;exitDx=0;exitDy=-5;" edge="1" parent="1">
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--72" value="строка, содержащая леммы/лемму слова" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=0;exitY=1;exitDx=0;exitDy=-5;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1381.3235294117649" y="1109.9999999999995" as="targetPoint" />
             <mxPoint x="1660" y="1109.9999999999995" as="sourcePoint" />
@@ -209,7 +209,7 @@
             <mxPoint x="2282" y="965" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mPj6bC7QtBjY4IhfVBW--77" value="строка, содержащая текст всего полученного файла и искомое слово" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--76" parent="1" source="mPj6bC7QtBjY4IhfVBW--26">
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--77" value="строка, содержащая текст всего полученного словаря и искомое слово" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" target="mPj6bC7QtBjY4IhfVBW--76" parent="1" source="mPj6bC7QtBjY4IhfVBW--26">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="2532" y="995" as="sourcePoint" />
           </mxGeometry>
@@ -259,7 +259,7 @@
           <mxGeometry x="1485" y="1150" width="110" height="30" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--92" value="LOOP" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;" vertex="1" parent="1">
-          <mxGeometry x="-340" y="170" width="1110" height="500" as="geometry" />
+          <mxGeometry x="-340" y="180" width="1110" height="490" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--93" value="[Повторить N раз, где N - количество элементов в массиве строк]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="-660" y="198" width="390" height="30" as="geometry" />
@@ -271,10 +271,10 @@
           <mxGeometry x="-660" y="168" width="320" height="30" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--99" value="LOOP" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;" vertex="1" parent="1">
-          <mxGeometry x="240" y="170" width="530" height="210" as="geometry" />
+          <mxGeometry x="240" y="180" width="530" height="200" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--100" value="[Повторить N раз, где N - количество словарей для поиска]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="300" y="168" width="350" height="30" as="geometry" />
+          <mxGeometry x="300" y="180" width="350" height="30" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--101" value="LOOP" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;" vertex="1" parent="1">
           <mxGeometry x="-340" y="385" width="580" height="285" as="geometry" />
