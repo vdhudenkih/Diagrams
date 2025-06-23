@@ -1,3 +1,66 @@
+
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        string str1 = "\"велотренажер\"";
+        string str2 = " <\"велотренажёр\"> ";
+
+        bool contains = ContainsWithYoEqualE(str2, str1);
+        Console.WriteLine(contains);  // Выведет True
+    }
+
+    static bool ContainsWithYoEqualE(string source, string toCheck)
+    {
+        if (string.IsNullOrEmpty(toCheck))
+            return true;
+        if (string.IsNullOrEmpty(source))
+            return false;
+
+        int sourceLength = source.Length;
+        int toCheckLength = toCheck.Length;
+
+        for (int i = 0; i <= sourceLength - toCheckLength; i++)
+        {
+            if (IsSubstringAtPosition(source, toCheck, i))
+                return true;
+        }
+
+        return false;
+    }
+
+    static bool IsSubstringAtPosition(string source, string toCheck, int position)
+    {
+        for (int j = 0; j < toCheck.Length; j++)
+        {
+            if (!CharsEqualWithYoE(source[position + j], toCheck[j]))
+                return false;
+        }
+        return true;
+    }
+
+    static bool CharsEqualWithYoE(char a, char b)
+    {
+        // Считаем 'е' и 'ё' равными, учитывая и заглавные буквы
+        if (a == b)
+            return true;
+
+        if (IsYoOrE(a) && IsYoOrE(b))
+            return true;
+
+        return false;
+    }
+
+    static bool IsYoOrE(char c)
+    {
+        return c == 'е' || c == 'ё' || c == 'Е' || c == 'Ё';
+    }
+}
+
+
+
 напиши код на c# по следующему условию:
 имееится две строки, например:
 string str1 = "\"велотренажер\"";
