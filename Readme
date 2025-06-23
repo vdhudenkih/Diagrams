@@ -1,3 +1,9 @@
+string word = "велотренажер";
+string[] strSearch = fileContent
+    .Where(s => s.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0)
+    .ToArray();
+
+
 почему при word="велотренажер"
 программа
 string[] strSearch = fileContent.Where(s => s.Contains("\"" + word + "\"", StringComparison.CurrentCultureIgnoreCase)).ToArray();
