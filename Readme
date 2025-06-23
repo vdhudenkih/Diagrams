@@ -1,3 +1,46 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class LemmaSearcher
+{
+    public static string[] FindLemmasContainingWord(string[] lemmas, string word)
+    {
+        if (lemmas == null || word == null)
+            return Array.Empty<string>();
+
+        // Нормализуем искомое слово: приведём к нижнему регистру и заменим ё на е
+        string normalizedWord = NormalizeWord(word);
+
+        List<string> result = new List<string>();
+
+        foreach (var lemma in lemmas)
+        {
+            if (string.IsNullOrEmpty(lemma))
+                continue;
+
+            // Нормализуем строку для поиска (тоже к нижнему регистру и замена ё на е)
+            string normalizedLemma = NormalizeWord(lemma);
+
+            // Проверяем, содержится ли искомое слово в строке
+            if (normalizedLemma.Contains(normalizedWord))
+            {
+                result.Add(lemma);
+            }
+        }
+
+        return result.ToArray();
+    }
+
+    private static string NormalizeWord(string input)
+    {
+        return input.ToLower().Replace('ё', 'е');
+    }
+}
+
+
+
+
 напиши функцию на яп C# по следующему условию:
 на вход подаётся массив строк, например:
 <lemma id="40802" rev="40802"><l t="велотрек"><g v="NOUN"/><g v="inan"/><g v="masc"/></l><f t="велотрек"><g v="sing"/><g v="nomn"/></f><f t="велотрека"><g v="sing"/><g v="gent"/></f><f t="велотреку"><g v="sing"/><g v="datv"/></f><f t="велотрек"><g v="sing"/><g v="accs"/></f><f t="велотреком"><g v="sing"/><g v="ablt"/></f><f t="велотреке"><g v="sing"/><g v="loct"/></f><f t="велотреки"><g v="plur"/><g v="nomn"/></f><f t="велотреков"><g v="plur"/><g v="gent"/></f><f t="велотрекам"><g v="plur"/><g v="datv"/></f><f t="велотреки"><g v="plur"/><g v="accs"/></f><f t="велотреками"><g v="plur"/><g v="ablt"/></f><f t="велотреках"><g v="plur"/><g v="loct"/></f></lemma>
