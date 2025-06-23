@@ -1,4 +1,14 @@
 string word = "велотренажер";
+string search = "\"" + word + "\"";
+
+string[] strSearch = fileContent
+    .Where(s => s.IndexOf(search, StringComparison.CurrentCultureIgnoreCase) >= 0)
+    .ToArray();
+
+
+
+
+string word = "велотренажер";
 string[] strSearch = fileContent
     .Where(s => s.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0)
     .ToArray();
