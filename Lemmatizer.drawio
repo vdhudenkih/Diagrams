@@ -1,9 +1,21 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.4">
   <diagram name="Страница — 1" id="jLnOedMRefn1-FSvZcaY">
-    <mxGraphModel dx="3329" dy="1396" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="3955" dy="2914" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--119" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.rect;fillColor2=none;strokeWidth=1;size=0;indent=5;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="1">
+          <mxGeometry x="200" y="-50" width="520" height="1770" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--118" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.rect;fillColor2=none;strokeWidth=1;size=0;indent=5;fillColor=#ffe6cc;strokeColor=#d79b00;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="1">
+          <mxGeometry x="720" y="-50" width="590" height="1770" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--117" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.rect;fillColor2=none;strokeWidth=1;size=0;indent=5;fillColor=#dae8fc;strokeColor=#6c8ebf;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="-50" width="1080" height="1770" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--116" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.rect;fillColor2=none;strokeWidth=1;size=20;indent=5;fillColor=#f8cecc;strokeColor=#b85450;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="1">
+          <mxGeometry x="2390" y="-50" width="670" height="1770" as="geometry" />
+        </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--17" value="Main" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
           <mxGeometry x="-310" y="15" width="100" height="1625" as="geometry" />
         </mxCell>
@@ -317,6 +329,18 @@
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--115" value="GetFileNameById" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1900" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--120" value="Поиск в словаре" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="370" y="-40" width="146" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--121" value="Создание строк признаков слова" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="907.5" y="-40" width="215" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--122" value="Получение леммы слова" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="1770" y="-40" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--123" value="Создание комбинаций полученных лемм" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="2637.5" y="-40" width="175" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
