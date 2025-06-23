@@ -1,9 +1,10 @@
+почему программа не находит строку:
+string[] fileContent = File.ReadAllLines(filePath);
 string word = "велотренажер";
 string search = "\"" + word + "\"";
-
-string[] strSearch = fileContent
-    .Where(s => s.IndexOf(search, StringComparison.CurrentCultureIgnoreCase) >= 0)
-    .ToArray();
+string[] strSearch = fileContent.Where(s => s.Contains(word, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+массив fileContent содержит строку:
+<lemma id="40803" rev="404710"><l t="велотренажёр"><g v="NOUN"/><g v="inan"/><g v="masc"/></l><f t="велотренажёр"><g v="sing"/><g v="nomn"/></f><f t="велотренажёра"><g v="sing"/><g v="gent"/></f><f t="велотренажёру"><g v="sing"/><g v="datv"/></f><f t="велотренажёр"><g v="sing"/><g v="accs"/></f><f t="велотренажёром"><g v="sing"/><g v="ablt"/></f><f t="велотренажёре"><g v="sing"/><g v="loct"/></f><f t="велотренажёры"><g v="plur"/><g v="nomn"/></f><f t="велотренажёров"><g v="plur"/><g v="gent"/></f><f t="велотренажёрам"><g v="plur"/><g v="datv"/></f><f t="велотренажёры"><g v="plur"/><g v="accs"/></f><f t="велотренажёрами"><g v="plur"/><g v="ablt"/></f><f t="велотренажёрах"><g v="plur"/><g v="loct"/></f></lemma>
 
 
 
