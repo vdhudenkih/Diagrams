@@ -1,3 +1,23 @@
+string[] lemmas = new string[]
+{
+    "<lemma id=\"40802\" rev=\"40802\"><l t=\"велотрек\"><g v=\"NOUN\"/><g v=\"inan\"/><g v=\"masc\"/></l><f t=\"велотрек\"><g v=\"sing\"/><g v=\"nomn\"/></f>...</lemma>",
+    "<lemma id=\"40803\" rev=\"404710\"><l t=\"велотренажёр\"><g v=\"NOUN\"/><g v=\"inan\"/><g v=\"masc\"/></l><f t=\"велотренажёр\"><g v=\"sing\"/><g v=\"nomn\"/></f>...</lemma>",
+    // другие строки
+};
+
+string searchWord = "велотренажер";
+
+string[] foundLemmas = LemmaSearcher.FindLemmasContainingWord(lemmas, searchWord);
+
+foreach (var lemma in foundLemmas)
+{
+    Console.WriteLine(lemma);
+}
+
+
+
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
