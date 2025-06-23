@@ -1,11 +1,11 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.4">
   <diagram name="Страница — 1" id="jLnOedMRefn1-FSvZcaY">
-    <mxGraphModel dx="2299" dy="821" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="3955" dy="1745" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="mPj6bC7QtBjY4IhfVBW--17" value="Main" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="-310" y="15" width="100" height="1965" as="geometry" />
+          <mxGeometry x="-310" y="15" width="100" height="1625" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--47" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--17">
           <mxGeometry x="50" y="409.96000000000004" width="10" height="75" as="geometry" />
@@ -43,25 +43,25 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--18" value="ProcessFile" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="60" y="30" width="100" height="1790" as="geometry" />
+          <mxGeometry x="60" y="30" width="100" height="1610" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--33" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--18">
           <mxGeometry x="40" y="60" width="10" height="40" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--19" value="SearchInDictionary" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="250" y="30" width="100" height="1790" as="geometry" />
+          <mxGeometry x="250" y="30" width="100" height="1610" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--44" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--19">
           <mxGeometry x="45" y="180" width="10" height="170" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--20" value="ParseLemma" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="572" y="29" width="100" height="1791" as="geometry" />
+          <mxGeometry x="572" y="29" width="100" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--40" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--20">
           <mxGeometry x="45" y="240" width="10" height="80" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--21" value="FormatWords" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="750" y="29" width="100" height="1781" as="geometry" />
+          <mxGeometry x="750" y="29" width="100" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--61" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--21">
           <mxGeometry x="40" y="651" width="10" height="139" as="geometry" />
@@ -73,43 +73,43 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--22" value="GetWordDescription" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="1110" y="29" width="120" height="1781" as="geometry" />
+          <mxGeometry x="1110" y="29" width="120" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--64" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--22">
           <mxGeometry x="55" y="680.5" width="10" height="80" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--23" value="ProcessWords" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="1332" y="29" width="100" height="1781" as="geometry" />
+          <mxGeometry x="1332" y="29" width="100" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--67" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--23">
           <mxGeometry x="45" y="820" width="10" height="620" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--24" value="GenerateCombinations" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="2420" y="30" width="139" height="1760" as="geometry" />
+          <mxGeometry x="2420" y="30" width="139" height="1610" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--79" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--24">
           <mxGeometry x="64.5" y="1220" width="10" height="180" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--25" value="GenerateCombinationsHelper" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="2870" y="29" width="170" height="1761" as="geometry" />
+          <mxGeometry x="2870" y="29" width="170" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--82" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--25">
           <mxGeometry x="80" y="1271" width="10" height="80" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--26" value="GetLemmaFromFile" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="1580" y="29" width="170" height="1781" as="geometry" />
+          <mxGeometry x="1580" y="29" width="170" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--70" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--26">
           <mxGeometry x="80" y="841" width="10" height="339" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--27" value="GetFileNameById" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="1870" y="29" width="170" height="1771" as="geometry" />
+          <mxGeometry x="1870" y="29" width="170" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--73" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--27">
           <mxGeometry x="80" y="861" width="10" height="80" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--30" value="ExtractLemmaFromXml" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="2120" y="29" width="170" height="1761" as="geometry" />
+          <mxGeometry x="2120" y="29" width="170" height="1611" as="geometry" />
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--76" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="mPj6bC7QtBjY4IhfVBW--30">
           <mxGeometry x="80" y="980" width="10" height="90" as="geometry" />
@@ -281,6 +281,42 @@
         </mxCell>
         <mxCell id="mPj6bC7QtBjY4IhfVBW--102" value="[Повторить N раз, где N - количество найденных слов-совпадений с их свойствами]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="-780" y="420" width="490" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--103" value="Main" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="-315" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--104" value="ProcessFile" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="55" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--105" value="SearchInDictionary" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="245" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--106" value="ParseLemma" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="567" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--107" value="FormatWords" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="745" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--108" value="GetWordDescription" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--109" value="ProcessWords" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1327" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--110" value="ProcessWords" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="1640" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--111" value="GenerateCombinations" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2426.75" y="1640" width="125.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--112" value="GenerateCombinationsHelper" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2866.13" y="1640" width="177.75" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--114" value="ExtractLemmaFromXml" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2134.5" y="1640" width="141" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mPj6bC7QtBjY4IhfVBW--115" value="GetFileNameById" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1900" y="1640" width="110" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
