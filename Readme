@@ -1,5 +1,47 @@
-почему код даёт ошибки (Desktop\ConsoleApp1\Program(002).cs(170,31): error CS0103: Имя "inputMaterials" отсутствует в текущем контексте
-Desktop\ConsoleApp1\Program(002).cs(174,36): error CS0103: Имя "inputMaterials" отсутствует в текущем контексте)
+почему код даёт ошибки
+Desktop\ConsoleApp1\Program(002).cs(702,170): error CS1026: ожидалась )
+Desktop\ConsoleApp1\Program(002).cs(702,171): error CS1519: Недопустимый токен ")" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(704,16): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(704,24): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(705,19): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(705,30): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(706,18): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(706,28): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(707,22): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(707,36): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(708,18): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(708,28): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(709,18): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(709,28): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(710,18): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(710,28): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(711,19): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(711,30): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(712,19): error CS1519: Недопустимый токен "=" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(712,30): error CS1519: Недопустимый токен ";" в объявлении класса, структуры или
+        интерфейса
+Desktop\ConsoleApp1\Program(002).cs(714,1): error CS1022: Ожидалось определение типа или пространства имен, либо признак        конца файла
+
+C:\Users\107108>
+:
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Text;
@@ -31,20 +73,34 @@ class Lemmatizer
             List<Word> words = new List<Word>();
             for (int i = 0; i < inputMaterialsProcessed.Length; i++)
             {
+				if(inputMaterialsProcessed[i].Contains("-"))
+				{
+					inputMaterialsProcessed[i]=inputMaterialsProcessed[i].Replace("-","@");
+				}
                 lemmas = SearchInDictionary(inputMaterialsProcessed[i]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				
                 for (int j = 0; j < lemmas.Length; j++)
                 {
+					//Console.WriteLine(lemmas[j]);
                     string[] list = lemmas[j].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
                     //Указанные ниже буквы нужно исключить ввиду засорения вывода программы, из-за наличия огромного количества их одинаковых форм. Такие символы обычно встечаются в формате сокращений с цифрами. Например: 2-ух, 2-х, 8-ми, 9-ти
                     if (list.Length >= 6 && list[1] != "х" && list[1] != "ми" && list[1] != "ти" && list[1] != "ух")
                     {
-                        words.Add(new Word(list[0], i, list[1], list[2], list[3], list[4], list[5], list[6]));
+						if (list[1].Contains("@"))
+						{
+							list[1]=list[1].Replace("@", "-");
+							words.Add(new Word(list[0], i, list[1], list[2], list[3], list[4], list[5], list[6],"Y"));
+						}
+						else
+						{
+							words.Add(new Word(list[0], i, list[1], list[2], list[3], list[4], list[5], list[6],"0000"));
+						}
                         countWords++;
                     }
                     else
                     {
                         //Если не нужна обработка ошибок
-                        words.Add(new Word("999999" + i, i, inputMaterialsProcessed[i], "0000", "0000", "0000", "0000", "0000"));
+                        words.Add(new Word("999999" + i, i, inputMaterialsProcessed[i].Replace("@", "-"), "0000", "0000", "0000", "0000", "0000", "0000"));
                         countNotDictionary++;
                         countWords++;
                         break;
@@ -68,7 +124,8 @@ class Lemmatizer
             //    Console.WriteLine($"Произошла ошибка: {ex.Message}");
             //}
             Console.WriteLine(FormatWords(words) + "\n" +ProcessWords(words));
-            //File.WriteAllText("output.txt", FormatWords(words) + "\n" + ProcessWords(words) + "\n");
+            File.WriteAllText("output.txt", FormatWords(words) + "\n" + ProcessWords(words) + "\n");
+			PrintWords(words);
             words.Clear();
         }
         
@@ -79,14 +136,14 @@ class Lemmatizer
 		{
 			if (words[i].Contains("-"))
 			{
-				if (SearchInDictionary(words[i])=="0")
+				if (SearchInDictionary("&"+words[i])=="0")
 				{
 					string[] inputMaterialsHyphen = words[i].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
 					words[i]=inputMaterialsHyphen[0];
 					string[] newInputMaterials ={};
 					for (int j=1; j<inputMaterialsHyphen.Length; j++)
 					{
-						newInputMaterials=InsertElementAfterIndex(words, inputMaterialsHyphen[j],i+j);
+						newInputMaterials=InsertElementAfterIndex(words, inputMaterialsHyphen[j],i+j-1);
 						words = newInputMaterials;
 					}
 					return newInputMaterials;
@@ -136,7 +193,12 @@ class Lemmatizer
     }
     static string SearchInDictionary(string word)
     {
-        
+		bool wordCheck=false;
+		if (word.Contains("&"))
+		{
+			wordCheck=true;
+			word=word.Substring(1);
+		}
         string[] dictionaryNumbers = {"", "ёеаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя"};
         string dictionaryNumber = "";
         for (int i = 0; i < dictionaryNumbers.Length; i++)
@@ -149,15 +211,17 @@ class Lemmatizer
         }
         //в 17-ом словаре встречаются не только слова на "хцчшщэюя", но и слова на все остальные буквы: аббревиатуры, ангицизмы и многое другое. Если всё это должно попадать в выборку - комментирование след. строки нужно убрать
         //dictionaryNumber += "-17";
+		if (word.Contains("-") || word.Contains("@"))
+        {
+            dictionaryNumber += "-17";
+        }
 		if (word.Contains("е") || word.Contains("ё"))
         {
             dictionaryNumber += "-E";
             word.Replace("ё","е");
         }
-		if (word.Contains("-"))
-        {
-            dictionaryNumber += "-17";
-        }
+		
+		
         string[] foundDictionaries = dictionaryNumber.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
         string lemmas = "";
         string filePath = "";
@@ -166,14 +230,17 @@ class Lemmatizer
         {
             filePath = "lemmas" + foundDictionaries[i] + ".txt";
             if (!File.Exists(filePath)) continue;
-
+			if (word.Contains("@"))
+			{
+				word=word.Replace("@","-");
+			}
             string[] fileContent = File.ReadAllLines(filePath);
             string[] strSearch = fileContent.Where(s => s.Contains("\"" + word+ "\"")).ToArray();
-			if (strSearch.Length==0 && inputMaterials[i].Contains("-"))
+			if (strSearch.Length==0 && word.Contains("-") && wordCheck)
 			{
 				return "0";
 			}
-			else if (strSearch.Length!=0 && inputMaterials[i].Contains("-"))
+			else if (strSearch.Length!=0 && word.Contains("-") && wordCheck)
 			{
 				return "1";
 			}
@@ -195,8 +262,9 @@ class Lemmatizer
     {
         foreach (var w in words.OrderBy(w => w.wordOrder))
         {
-            Console.WriteLine(String.Format("wordId: {0}, wordOrder: {1}, wordText: {2}, partOfSpeech: {3}, wordCase: {4}, animation: {5} wordKind: {6}, singPlur: {7}", w.wordId, w.wordOrder, w.wordText, w.partOfSpeech, w.wordCase, w.animation, w.wordKind, w.singPlur));
-        }
+            Console.WriteLine(String.Format("wordId: {0}, wordOrder: {1}, wordText: {2}, partOfSpeech: {3}, wordCase: {4}, animation: {5} wordKind: {6}, singPlur: {7} , specMarks: {7}", w.wordId, w.wordOrder, w.wordText, w.partOfSpeech, w.wordCase, w.animation, w.wordKind, w.singPlur, w.specMarks));
+			Console.ReadLine();			
+		}
     }
     public static List<string> ParseLemma(string inputWord, string lemmaXml)
     {
@@ -227,6 +295,7 @@ class Lemmatizer
 
                 // Формируем базовую строку с ID леммы
                 //string baseResult = $"{lemmaId}-{inputWord}-{posTag}";
+				inputWord=inputWord.Replace("-","@");
                 string baseResult = String.Format("{0}-{1}-{2}", lemmaId, inputWord, posTag);
 
                 // Для глаголов добавляем специфичные теги
@@ -481,6 +550,23 @@ public static string FormatWords(List<Word> words)
             //    _ => word.singPlur
             //});
         }
+		if (!string.IsNullOrEmpty(word.specMarks) && word.specMarks != "0000")
+        {
+            switch (word.specMarks)
+            {
+                case "Y":
+                    parts.Add("разделённый дефис");
+                    break;
+                case "0000":
+                    break;
+            }
+            //parts.Add(word.singPlur switch
+            //{
+            //    "sing" => "единственное число",
+            //    "plur" => "множественное число",
+            //    _ => word.singPlur
+            //});
+        }
         
         // Удаляем null значения (которые могли появиться при switch)
         return string.Join(", ", parts.Where(p => p != null));
@@ -655,8 +741,9 @@ class Word
     public string animation;
     public string wordKind;
     public string singPlur;
+	public string specMarks;
 
-    public Word(string WordId, int WordOrder, string WordText, string PartOfSpeech, string WordCase, string Animation, string WordKind, string SingPlur)
+    public Word(string WordId, int WordOrder, string WordText, string PartOfSpeech, string WordCase, string Animation, string WordKind, string SingPlur, string SpecMarks;)
     {
         wordId = WordId;
         wordOrder = WordOrder;
@@ -666,6 +753,6 @@ class Word
         singPlur = SingPlur;
         wordCase = WordCase;
         animation = Animation;
-        
+        specMarks = SpecMarks;
     }
 }
