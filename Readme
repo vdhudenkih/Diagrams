@@ -1,1 +1,671 @@
+почему код даёт ошибки (Desktop\ConsoleApp1\Program(002).cs(170,31): error CS0103: Имя "inputMaterials" отсутствует в текущем контексте
+Desktop\ConsoleApp1\Program(002).cs(174,36): error CS0103: Имя "inputMaterials" отсутствует в текущем контексте)
+using System.Text.RegularExpressions;
+using System.Xml;
+using System.Text;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System;
+using System.IO;
+using System.Linq;
 
+class Lemmatizer
+{
+    static void Main()
+    {
+        string[] testData = ProcessFile("input.txt");
+        float countNotDictionary = 0;
+        float countWords = 0;
+        for (int test = 0; test < testData.Length; test++)
+        {
+            string inputString = testData[test];
+            inputString = inputString.ToLower();
+			inputString = inputString.Replace(".", ". ");
+            //inputString = inputString.Replace("-", " ");
+            inputString = inputString.Replace("(", " ");
+            inputString = inputString.Replace(")", " ");
+            inputString = inputString.Replace("|", "");
+            string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); //Разделяем строку в массив по пробелам
+            string[] lemmas;
+			string[] inputMaterialsProcessed=ProcessHyphen(inputMaterials);
+            List<Word> words = new List<Word>();
+            for (int i = 0; i < inputMaterialsProcessed.Length; i++)
+            {
+                lemmas = SearchInDictionary(inputMaterialsProcessed[i]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                for (int j = 0; j < lemmas.Length; j++)
+                {
+                    string[] list = lemmas[j].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    //Указанные ниже буквы нужно исключить ввиду засорения вывода программы, из-за наличия огромного количества их одинаковых форм. Такие символы обычно встечаются в формате сокращений с цифрами. Например: 2-ух, 2-х, 8-ми, 9-ти
+                    if (list.Length >= 6 && list[1] != "х" && list[1] != "ми" && list[1] != "ти" && list[1] != "ух")
+                    {
+                        words.Add(new Word(list[0], i, list[1], list[2], list[3], list[4], list[5], list[6]));
+                        countWords++;
+                    }
+                    else
+                    {
+                        //Если не нужна обработка ошибок
+                        words.Add(new Word("999999" + i, i, inputMaterialsProcessed[i], "0000", "0000", "0000", "0000", "0000"));
+                        countNotDictionary++;
+                        countWords++;
+                        break;
+                    }
+                }
+            }
+            //Для сохранения в тхт файле в репозитории
+            //try
+            //{
+            //    using (StreamWriter sw = File.AppendText("output.txt"))
+            //    {
+            //        sw.Write(FormatWords(words) + "\n" + ProcessWords(words) + "\n");
+            //    }
+            //    RunCommand("git", "add -A");
+            //    RunCommand("git", "commit -m \"Обновление output.txt\"");
+            //    RunCommand("git", "pull origin main");
+            //    RunCommand("git", "push origin main");
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Произошла ошибка: {ex.Message}");
+            //}
+            Console.WriteLine(FormatWords(words) + "\n" +ProcessWords(words));
+            //File.WriteAllText("output.txt", FormatWords(words) + "\n" + ProcessWords(words) + "\n");
+            words.Clear();
+        }
+        
+    }
+	static string[] ProcessHyphen(string[] words)
+	{
+		for (int i = 0; i < words.Length; i++)
+		{
+			if (words[i].Contains("-"))
+			{
+				if (SearchInDictionary(words[i])=="0")
+				{
+					string[] inputMaterialsHyphen = words[i].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+					words[i]=inputMaterialsHyphen[0];
+					string[] newInputMaterials ={};
+					for (int j=1; j<inputMaterialsHyphen.Length; j++)
+					{
+						newInputMaterials=InsertElementAfterIndex(words, inputMaterialsHyphen[j],i+j);
+						words = newInputMaterials;
+					}
+					return newInputMaterials;
+				}
+			}
+		}
+		return words;
+	}
+	public static T[] InsertElementAfterIndex<T>(T[] originalArray, T newElement, int insertIndex)
+	{
+		// Проверка на валидность индекса вставки
+		if (insertIndex < 0 || insertIndex >= originalArray.Length)
+		{
+			throw new IndexOutOfRangeException("Недопустимый индекс для вставки.");
+		}
+
+		// Создание нового массива на один элемент больше исходного
+		T[] newArray = new T[originalArray.Length + 1];
+
+		// Копирование элементов до индекса вставки
+		Array.Copy(originalArray, 0, newArray, 0, insertIndex + 1);
+
+		// Вставка нового элемента
+		newArray[insertIndex + 1] = newElement;
+
+		// Копирование оставшихся элементов после вставки
+		if (insertIndex + 1 < originalArray.Length)
+		{
+			Array.Copy(originalArray, insertIndex + 1, newArray, insertIndex + 2, originalArray.Length - (insertIndex + 1));
+		}
+
+		return newArray;
+	}
+
+    static string[] ProcessFile(string filePath)
+    {
+        var lines = File.ReadAllLines(filePath);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            int index = lines[i].IndexOf('\\');
+            if (index >= 0)
+            {
+                lines[i] = lines[i].Substring(0, index);
+            }
+        }
+        return lines;
+    }
+    static string SearchInDictionary(string word)
+    {
+        
+        string[] dictionaryNumbers = {"", "ёеаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя"};
+        string dictionaryNumber = "";
+        for (int i = 0; i < dictionaryNumbers.Length; i++)
+        {
+            if (dictionaryNumbers[i].Contains(word[0]))
+            {
+                dictionaryNumber += "-";
+                dictionaryNumber += i;
+            }
+        }
+        //в 17-ом словаре встречаются не только слова на "хцчшщэюя", но и слова на все остальные буквы: аббревиатуры, ангицизмы и многое другое. Если всё это должно попадать в выборку - комментирование след. строки нужно убрать
+        //dictionaryNumber += "-17";
+		if (word.Contains("е") || word.Contains("ё"))
+        {
+            dictionaryNumber += "-E";
+            word.Replace("ё","е");
+        }
+		if (word.Contains("-"))
+        {
+            dictionaryNumber += "-17";
+        }
+        string[] foundDictionaries = dictionaryNumber.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+        string lemmas = "";
+        string filePath = "";
+
+        for (int i = 0; i < foundDictionaries.Length; i++)
+        {
+            filePath = "lemmas" + foundDictionaries[i] + ".txt";
+            if (!File.Exists(filePath)) continue;
+
+            string[] fileContent = File.ReadAllLines(filePath);
+            string[] strSearch = fileContent.Where(s => s.Contains("\"" + word+ "\"")).ToArray();
+			if (strSearch.Length==0 && inputMaterials[i].Contains("-"))
+			{
+				return "0";
+			}
+			else if (strSearch.Length!=0 && inputMaterials[i].Contains("-"))
+			{
+				return "1";
+			}
+
+            foreach (string str in strSearch)
+            {
+                var parsedLemmas = ParseLemma(word, str);
+                foreach (string lemma in parsedLemmas)
+                {
+                    lemmas += lemma + " ";
+                }
+            }
+        }
+
+        return string.IsNullOrEmpty(lemmas) ? "не найдено" : lemmas.Trim();
+    }
+    
+    public static void PrintWords(List<Word> words)
+    {
+        foreach (var w in words.OrderBy(w => w.wordOrder))
+        {
+            Console.WriteLine(String.Format("wordId: {0}, wordOrder: {1}, wordText: {2}, partOfSpeech: {3}, wordCase: {4}, animation: {5} wordKind: {6}, singPlur: {7}", w.wordId, w.wordOrder, w.wordText, w.partOfSpeech, w.wordCase, w.animation, w.wordKind, w.singPlur));
+        }
+    }
+    public static List<string> ParseLemma(string inputWord, string lemmaXml)
+    {
+        var result = new List<string>();
+
+        // Извлекаем ID леммы
+        var lemmaIdMatch = Regex.Match(lemmaXml, @"<lemma id=""(\d+)""");
+        string lemmaId = lemmaIdMatch.Success ? lemmaIdMatch.Groups[1].Value : "0000";
+
+        // Извлекаем все формы слова из XML
+        var forms = Regex.Matches(lemmaXml, @"<f t=""([^""]+)"">(.*?)</f>");
+        
+        // Извлекаем основной тег части речи и другие общие теги из lemma
+        var lemmaMatch = Regex.Match(lemmaXml, @"<l t=""[^""]+"">(.*?)</l>");
+        var lemmaTags = Regex.Matches(lemmaMatch.Groups[1].Value, @"<g v=""([^""]+)""")
+            .Cast<Match>().Select(t => t.Groups[1].Value).ToList();
+        
+        // Определяем часть речи (добавляем поддержку VERB)
+		string posTag = lemmaTags.FirstOrDefault(t => t == "NOUN" || t == "ADJF" || t == "VERB" || t == "PREP"|| t == "PRTF"|| t == "NUMR"|| t == "CONJ"|| t == "PRCL" || t=="COMP" || t== "GRND" || t == "INFN" || t == "PRTS" || t == "ADVB" || t == "NPRO" || t == "PRED" || t == "INTJ") ?? "0000";
+        foreach (Match form in forms)
+        {
+            string formWord = form.Groups[1].Value;
+            if (formWord==inputWord)
+            {
+                // Извлекаем теги для данной формы
+                var tags = Regex.Matches(form.Groups[2].Value, @"<g v=""([^""]+)""");
+                var tagList = tags.Cast<Match>().Select(t => t.Groups[1].Value).ToList();
+
+                // Формируем базовую строку с ID леммы
+                //string baseResult = $"{lemmaId}-{inputWord}-{posTag}";
+                string baseResult = String.Format("{0}-{1}-{2}", lemmaId, inputWord, posTag);
+
+                // Для глаголов добавляем специфичные теги
+                if (posTag == "VERB")
+                {
+                    // Добавляем род (только для прошедшего времени)
+                    string genderTag = tagList.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-0000-0000-{genderTag}"; // Пропускаем падеж и одушевленность
+                    baseResult += String.Format("-0000-0000-{0}", genderTag); // Пропускаем падеж и одушевленность
+                    // Добавляем число
+                    string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{numberTag}";
+                    baseResult += String.Format("-{0}", numberTag);
+                }
+                else
+                {
+                    // Обработка для существительных и прилагательных (как было раньше)
+                    string caseTag = tagList.FirstOrDefault(t => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{caseTag}";
+                    baseResult += String.Format("-{0}", caseTag);
+                    string animTag = lemmaTags.Contains("anim") ? "anim" : lemmaTags.Contains("inan") ? "inan" : "0000";
+                    //baseResult += $"-{animTag}";
+                    baseResult += String.Format("-{0}", animTag);
+                    string genderTag = lemmaTags.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{genderTag}";
+                    baseResult += String.Format("-{0}", genderTag);
+
+                    string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{numberTag}";
+                    baseResult += String.Format("-{0}", numberTag);
+                }
+
+                result.Add(baseResult);
+            }
+        }
+
+        return result;
+    }
+public static string FormatWords(List<Word> words)
+    {
+        // Группируем слова по wordOrder, сохраняя порядок исходного списка
+        var groupedWords = words.GroupBy(w => w.wordOrder)
+                               .OrderBy(g => g.Key)
+                               .ToList();
+        
+        var resultParts = new List<string>();
+
+        foreach (var group in groupedWords)
+        {
+            // Берем первое слово из группы для получения wordText (они одинаковые в группе)
+            var wordText = group.First().wordText.ToUpper();
+
+            // Формируем описания для всех вариантов слова
+            var variantDescriptions = group.Select(word => GetWordDescription(word)).ToList();
+
+            // Собираем часть результата для этой группы
+            //resultParts.Add($"{wordText}({string.Join("\\", variantDescriptions)})");
+            resultParts.Add(String.Format("{0}({1})", wordText, string.Join("\\", variantDescriptions)));
+        }
+        
+        return string.Join(" ", resultParts);
+    }
+    //t => t == "NOUN" || t == "ADJF" || t == "VERB" || t == "PREP"|| t == "PRTF"|| t == "NUMR"|| t == "CONJ"|| t == "PRCL" || t=="COMP"
+    private static string GetWordDescription(Word word)
+    {
+        var parts = new List<string>();
+
+        // Часть речи
+        switch (word.partOfSpeech)
+        {
+			case "GRND":
+                parts.Add("деепричастие");
+                break;
+            case "INFN":
+                parts.Add("глагол (инфинитив)");
+                break;
+            case "PRTS":
+                parts.Add("причастие (краткое)");
+                break;
+            case "ADVB":
+                parts.Add("наречие");
+                break;
+            case "NPRO":
+                parts.Add("местоимение-существительное");
+                break;
+            case "PRED":
+                parts.Add("предикатив");
+                break;
+            case "INTJ":
+                parts.Add("междометие");
+                break;
+            case "NOUN":
+                parts.Add("имя существительное");
+                break;
+            case "VERB":
+                parts.Add("глагол");
+                break;
+            case "ADJF":
+                parts.Add("имя прилагательное");
+                break;
+            case "ADJS":
+                parts.Add("прилагательное (краткое)");
+                break;
+            case "COMP":
+                parts.Add("компаратив");
+                break;
+            case "PREP":
+                parts.Add("предлог");
+                break;
+            case "PRTF":
+                parts.Add("причастие (полное)");
+                break;
+            case "NUMR":
+                parts.Add("числительное");
+                break;
+            case "CONJ":
+                parts.Add("союз");
+                break;
+            case "PRCL":
+                parts.Add("частица");
+                break;
+            case "0000":
+                parts.Add("X");
+                break;
+        }
+        //parts.Add(word.partOfSpeech switch
+        //{
+        //    "NOUN" => "имя существительное",
+        //    "VERB" => "глагол",
+        //    "ADJF" => "имя прилагательное",
+        //    "ADJS" => "прилагательное (краткое)",
+        //    "COMP" => "компаратив",
+        //    "PREP" => "предлог",
+        //    "PRTF" => "причастие (полное)",
+        //   "NUMR" => "числительное",
+        //    "CONJ" => "союз",
+        //    "PRCL" => "частица",
+        //    "0000" => "X",
+        //    _ => word.partOfSpeech
+        //});
+        
+        // Падеж (только для некоторых частей речи)
+        if (word.partOfSpeech == "NOUN" || word.partOfSpeech == "ADJF" || word.partOfSpeech == "ADJS")
+        {
+            switch (word.wordCase)
+            {
+                case "nomn":
+                    parts.Add("именительный падеж");
+                    break;
+                case "gent":
+                    parts.Add("родительный падеж");
+                    break;
+                case "datv":
+                    parts.Add("дательный падеж");
+                    break;
+                case "accs":
+                    parts.Add("винительный падеж");
+                    break;
+                case "ablt":
+                    parts.Add("творительный падеж");
+                    break;
+                case "loct":
+                    parts.Add("предложный падеж");
+                    break;
+                case "voct":
+                    parts.Add("звательный падеж");
+                    break;
+                case "0000":
+                    break;
+            }
+            //parts.Add(word.wordCase switch
+            //{
+            //    "nomn" => "именительный падеж",
+            //    "gent" => "родительный падеж",
+            //    "datv" => "дательный падеж",
+            //    "accs" => "винительный падеж",
+            //    "ablt" => "творительный падеж",
+            //    "loct" => "предложный падеж",
+            //    "voct" => "звательный падеж",
+            //    _ => word.wordCase != "0000" ? word.wordCase : null
+            //});
+        }
+        
+        // Род (если есть)
+        if (!string.IsNullOrEmpty(word.wordKind) && word.wordKind != "0000")
+        {
+            switch (word.wordKind)
+            {
+                case "masc":
+                    parts.Add("мужской род");
+                    break;
+                case "femn":
+                    parts.Add("женский род");
+                    break;
+                case "neut":
+                    parts.Add("средний род");
+                    break;
+                case "0000":
+                    break;
+
+            }
+            //parts.Add(word.wordKind switch
+            //{
+            //    "masc" => "мужской род",
+            //    "femn" => "женский род",
+            //    "neut" => "средний род",
+            //    _ => word.wordKind
+            //});
+        }
+        
+        // Одушевленность (для существительных)
+        if (word.partOfSpeech == "NOUN" && word.animation != "0000")
+        {
+            switch (word.animation)
+            {
+                case "anim":
+                    parts.Add("одушевленное");
+                    break;
+                case "inan":
+                    parts.Add("неодушевленное");
+                    break;
+                case "0000":
+                    break;
+
+            }
+            //parts.Add(word.animation switch
+            //{
+            //    "anim" => "одушевленное",
+            //    "inan" => "неодушевленное",
+            //    _ => word.animation
+            //});
+        }
+        
+        // Число
+        if (!string.IsNullOrEmpty(word.singPlur) && word.singPlur != "0000")
+        {
+            switch (word.singPlur)
+            {
+                case "sing":
+                    parts.Add("единственное число");
+                    break;
+                case "plur":
+                    parts.Add("множественное число");
+                    break;
+                case "0000":
+                    break;
+            }
+            //parts.Add(word.singPlur switch
+            //{
+            //    "sing" => "единственное число",
+            //    "plur" => "множественное число",
+            //    _ => word.singPlur
+            //});
+        }
+        
+        // Удаляем null значения (которые могли появиться при switch)
+        return string.Join(", ", parts.Where(p => p != null));
+    }
+    
+    public static string ProcessWords(List<Word> words)
+    {
+        // Группируем слова по wordOrder и внутри по wordId
+        var orderedGroups = words
+            .GroupBy(w => w.wordOrder)
+            .OrderBy(g => g.Key)
+            .Select(g => g.GroupBy(w => w.wordId)
+                        .Select(g2 => g2.First())
+                        .ToList())
+            .ToList();
+
+        // Находим все уникальные леммы для каждого wordId
+        Dictionary<string, string> lemmas = new Dictionary<string, string>();
+        foreach (var word in words)
+        {
+            if (!lemmas.ContainsKey(word.wordId))
+            {
+                lemmas[word.wordId] = GetLemmaFromFile(word.wordId, word.wordText);
+            }
+        }
+
+        // Собираем все варианты для каждой позиции
+        List<List<string>> positionVariants = new List<List<string>>();
+        foreach (var orderGroup in orderedGroups)
+        {
+            positionVariants.Add(orderGroup.Select(w => lemmas[w.wordId]).ToList());
+        }
+
+        // Генерируем все комбинации
+        List<string> combinations = GenerateCombinations(positionVariants);
+
+        // Объединяем результаты
+        StringBuilder result = new StringBuilder();
+        foreach (var comb in combinations)
+        {
+            result.Append(comb);
+            result.Append(" ");
+        }
+
+        // Удаляем последний пробел и добавляем "|"
+        if (result.Length > 0)
+            result.Length--;
+        result.Append("|");
+
+        return result.ToString();
+    }
+
+    private static List<string> GenerateCombinations(List<List<string>> positionVariants)
+    {
+        List<string> result = new List<string>();
+        if (positionVariants.Count == 0) return result;
+
+        // Для каждой позиции собираем все возможные комбинации
+        GenerateCombinationsHelper(positionVariants, 0, new List<string>(), result);
+        return result;
+    }
+
+    private static void GenerateCombinationsHelper(
+        List<List<string>> positionVariants,
+        int currentPosition,
+        List<string> currentCombination,
+        List<string> result)
+    {
+        if (currentPosition == positionVariants.Count)
+        {
+            result.Add(string.Join(" ", currentCombination));
+            return;
+        }
+
+        foreach (var variant in positionVariants[currentPosition])
+        {
+            var newCombination = new List<string>(currentCombination) { variant };
+            GenerateCombinationsHelper(positionVariants, currentPosition + 1, newCombination, result);
+        }
+    }
+
+    private static string GetLemmaFromFile(string wordId, string wordText)
+    {
+        int id = int.Parse(wordId);
+        string fileName = GetFileNameById(id);
+
+        if (!File.Exists(fileName) && fileName != "не словарное слово")
+        {
+            if (fileName != "не словарное слово")
+            {
+                throw new FileNotFoundException(String.Format("Файл {0} не найден", fileName));
+            }
+        }
+        if (fileName != "не словарное слово")
+        {
+            using (XmlReader reader = XmlReader.Create(fileName))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "lemma")
+                    {
+                        string lemmaId = reader.GetAttribute("id");
+                        if (lemmaId == wordId)
+                        {
+                            string lemmaXml = reader.ReadOuterXml();
+                            return ExtractLemmaFromXml(lemmaXml, wordText);
+                        }
+                    }
+                }
+
+            }
+        }
+        
+        return wordText.ToUpper();
+    }
+
+    private static string GetFileNameById(int id)
+    {
+        if (id >= 1 && id <= 25000) return "lemmas1.txt";
+        if (id >= 25001 && id <= 50000) return "lemmas2.txt";
+        if (id >= 50001 && id <= 75000) return "lemmas3.txt";
+        if (id >= 75001 && id <= 100500) return "lemmas4.txt";
+        if (id >= 100501 && id <= 125000) return "lemmas5.txt";
+        if (id >= 125001 && id <= 150000) return "lemmas6.txt";
+        if (id >= 150001 && id <= 175000) return "lemmas7.txt";
+        if (id >= 175001 && id <= 195600) return "lemmas8.txt";
+        if (id >= 195601 && id <= 219999) return "lemmas9.txt";
+        if (id >= 220000 && id <= 244000) return "lemmas10.txt";
+        if (id >= 244001 && id <= 268000) return "lemmas11.txt";
+        if (id >= 268001 && id <= 291000) return "lemmas12.txt";
+        if (id >= 291001 && id <= 315500) return "lemmas13.txt";
+        if (id >= 315501 && id <= 340000) return "lemmas14.txt";
+        if (id >= 340001 && id <= 362000) return "lemmas15.txt";
+        if (id >= 362001 && id <= 372000) return "lemmas16.txt";
+        if (id >= 372001 && id <= 417260) return "lemmas17.txt";
+        if (id >= 999999) return "не словарное слово";
+        
+        throw new ArgumentException(String.Format("Неизвестный диапазон для id: {0}", id));
+    }
+
+    private static string ExtractLemmaFromXml(string lemmaXml, string wordText)
+    {
+        try
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(lemmaXml);
+            
+            XmlNode lNode = doc.SelectSingleNode("//l");
+            if (lNode != null)
+            {
+                string lemma = lNode.Attributes["t"].Value;
+                return lemma.ToUpper();
+            }
+        }
+        catch (Exception)
+        {
+            // В случае ошибки парсинга XML возвращаем слово в верхнем регистре
+        }
+        
+        return wordText.ToUpper();
+    }
+}
+
+
+class Word
+{
+    public string wordId;
+    public int wordOrder;
+    public string wordText;
+    public string partOfSpeech;
+    public string wordCase;
+    public string animation;
+    public string wordKind;
+    public string singPlur;
+
+    public Word(string WordId, int WordOrder, string WordText, string PartOfSpeech, string WordCase, string Animation, string WordKind, string SingPlur)
+    {
+        wordId = WordId;
+        wordOrder = WordOrder;
+        wordText = WordText;
+        partOfSpeech = PartOfSpeech;
+        wordKind = WordKind;
+        singPlur = SingPlur;
+        wordCase = WordCase;
+        animation = Animation;
+        
+    }
+}
