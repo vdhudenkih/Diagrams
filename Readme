@@ -1,3 +1,104 @@
+REPORT zcombine_lemmas.
+
+TYPES: BEGIN OF ty_lemma,
+         position_id TYPE numc3,
+         order       TYPE i,
+         lemma_id    TYPE char8,
+       END OF ty_lemma.
+
+DATA: lt_lemmas_per_order TYPE TABLE OF ty_lemma WITH EMPTY KEY,
+      ls_lemma            TYPE ty_lemma.
+
+" Пример заполнения LT_LEMMAS_PER_ORDER (можно заменить на реальные данные)
+lt_lemmas_per_order = VALUE #( 
+  ( position_id = '001' order = 0 lemma_id = '9'  )
+  ( position_id = '002' order = 0 lemma_id = '18' )
+  ( position_id = '003' order = 0 lemma_id = '21' )
+  ( position_id = '004' order = 1 lemma_id = '14' )
+  ( position_id = '005' order = 1 lemma_id = '16' )
+  ( position_id = '006' order = 2 lemma_id = '34' )
+).
+
+" --- Определяем уникальные ORDER ---
+DATA: lt_unique_orders TYPE SORTED TABLE OF i WITH UNIQUE KEY table_line,
+      lv_order         TYPE i.
+
+LOOP AT lt_lemmas_per_order INTO ls_lemma.
+  INSERT ls_lemma-order INTO TABLE lt_unique_orders.
+ENDLOOP.
+
+DATA(lv_num_orders) = lines( lt_unique_orders ).
+
+" --- Для каждого ORDER собираем массив записей ---
+" Используем внутренний массив массивов (таблицу таблиц)
+" Поскольку нельзя создавать таблицы, используем массивы в памяти
+
+TYPES: ty_lemmas_for_order TYPE STANDARD TABLE OF ty_lemma WITH EMPTY KEY,
+       ty_lemmas_for_orders TYPE STANDARD TABLE OF ty_lemmas_for_order WITH EMPTY KEY.
+
+DATA: lt_lemmas_grouped TYPE STANDARD TABLE OF ty_lemmas_for_order WITH EMPTY KEY,
+      lt_current_combination TYPE STANDARD TABLE OF ty_lemma WITH EMPTY KEY.
+
+DATA: lt_order_list TYPE STANDARD TABLE OF i WITH EMPTY KEY.
+
+" Заполним lt_order_list из lt_unique_orders (чтобы иметь нумерованный список)
+lt_order_list = VALUE #( FOR <order> IN lt_unique_orders ( <order> ) ).
+
+" Создадим внутренний массив массивов
+DATA: lt_lemmas_for_order TYPE STANDARD TABLE OF ty_lemma WITH EMPTY KEY.
+
+DATA: lt_all_groups TYPE TABLE OF ty_lemmas_for_order WITH EMPTY KEY.
+
+" Для каждого ORDER сформируем подтаблицу
+DATA: lt_groups TYPE STANDARD TABLE OF ty_lemmas_for_order WITH EMPTY KEY,
+      lt_tmp TYPE ty_lemmas_for_order.
+
+LOOP AT lt_order_list INTO lv_order.
+  CLEAR lt_tmp.
+  LOOP AT lt_lemmas_per_order INTO ls_lemma WHERE order = lv_order.
+    APPEND ls_lemma TO lt_tmp.
+  ENDLOOP.
+  APPEND lt_tmp TO lt_all_groups.
+ENDLOOP.
+
+" --- Рекурсивная процедура перебора комбинаций ---
+
+FORM combine USING iv_level TYPE i
+                     it_groups TYPE STANDARD TABLE OF ty_lemmas_for_order
+                     it_comb TYPE STANDARD TABLE OF ty_lemma.
+
+  DATA: lt_current_group TYPE ty_lemmas_for_order,
+        ls_selected_lemma TYPE ty_lemma.
+
+  " Получаем текущий набор лемм для данного уровня (ORDER)
+  READ TABLE it_groups INTO lt_current_group INDEX iv_level.
+  IF sy-subrc <> 0.
+    RETURN.
+  ENDIF.
+
+  LOOP AT lt_current_group INTO ls_selected_lemma.
+    DATA(it_comb_new) = it_comb.
+    APPEND ls_selected_lemma TO it_comb_new.
+
+    IF iv_level = lv_num_orders.
+      " Вывод комбинации
+      WRITE: / 'Комбинация:'.
+      LOOP AT it_comb_new INTO DATA(ls_out).
+        WRITE: / ls_out-position_id, ls_out-order, ls_out-lemma_id.
+      ENDLOOP.
+      WRITE: / '---------------------------'.
+    ELSE.
+      PERFORM combine USING iv_level + 1 it_groups it_comb_new.
+    ENDIF.
+  ENDLOOP.
+
+ENDFORM.
+
+" --- Запускаем перебор ---
+PERFORM combine USING 1 lt_all_groups VALUE #( ).
+
+
+
 
 
 напиши программу на ABAP по следующему условию:
