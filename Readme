@@ -1,14 +1,2 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<lemmata>
-    <lemma id="1" rev="1"><l t="ёж"><g v="NOUN"/><g v="anim"/><g v="masc"/></l>...
-    ...
-</lemmata>
-
-
-у меня есть файл с расширением txt, но данные в нем представлены в виде:
-<lemmata>
-    <lemma id="1" rev="1"><l t="ёж"><g v="NOUN"/><g v="anim"/><g v="masc"/></l><f t="ёж"><g v="sing"/><g v="nomn"/></f><f t="ежа"><g v="sing"/><g v="gent"/></f><f t="ежу"><g v="sing"/><g v="datv"/></f><f t="ежа"><g v="sing"/><g v="accs"/></f><f t="ежом"><g v="sing"/><g v="ablt"/></f><f t="еже"><g v="sing"/><g v="loct"/></f><f t="ежи"><g v="plur"/><g v="nomn"/></f><f t="ежей"><g v="plur"/><g v="gent"/></f><f t="ежам"><g v="plur"/><g v="datv"/></f><f t="ежей"><g v="plur"/><g v="accs"/></f><f t="ежами"><g v="plur"/><g v="ablt"/></f><f t="ежах"><g v="plur"/><g v="loct"/></f></lemma>
-    <lemma id="2" rev="2"><l t="ёж"><g v="NOUN"/><g v="inan"/><g v="masc"/></l><f t="ёж"><g v="sing"/><g v="nomn"/></f><f t="ежа"><g v="sing"/><g v="gent"/></f><f t="ежу"><g v="sing"/><g v="datv"/></f><f t="ёж"><g v="sing"/><g v="accs"/></f><f t="ежом"><g v="sing"/><g v="ablt"/></f><f t="еже"><g v="sing"/><g v="loct"/></f><f t="ежи"><g v="plur"/><g v="nomn"/></f><f t="ежей"><g v="plur"/><g v="gent"/></f><f t="ежам"><g v="plur"/><g v="datv"/></f><f t="ежи"><g v="plur"/><g v="accs"/></f><f t="ежами"><g v="plur"/><g v="ablt"/></f><f t="ежах"><g v="plur"/><g v="loct"/></f></lemma>
-    <lemma id="3" rev="3"><l t="ёжик"><g v="NOUN"/><g v="anim"/><g v="masc"/></l><f t="ёжик"><g v="sing"/><g v="nomn"/></f><f t="ёжика"><g v="sing"/><g v="gent"/></f><f t="ёжику"><g v="sing"/><g v="datv"/></f><f t="ёжика"><g v="sing"/><g v="accs"/></f><f t="ёжиком"><g v="sing"/><g v="ablt"/></f><f t="ёжике"><g v="sing"/><g v="loct"/></f><f t="ёжики"><g v="plur"/><g v="nomn"/></f><f t="ёжиков"><g v="plur"/><g v="gent"/></f><f t="ёжикам"><g v="plur"/><g v="datv"/></f><f t="ёжиков"><g v="plur"/><g v="accs"/></f><f t="ёжиками"><g v="plur"/><g v="ablt"/></f><f t="ёжиках"><g v="plur"/><g v="loct"/></f></lemma>
-    <lemma id="4" rev="4"><l t="ёжиком"><g v="ADVB"/></l><f t="ёжиком"></f></lemma>
-как мне перевести этот файл в xml?
+у меня есть несколько слов.
+напиши алгоритм на русском языке, как мне перебрать все их возможные комбинации
