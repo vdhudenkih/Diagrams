@@ -1,128 +1,5 @@
-Ниже приведён алгоритм обработки входной XML-строки (леммы с формами и тегами) по вашему примеру и условию, с последующим формированием записей для вставки в таблицу LT_WORDS.
-
----
-
-### Алгоритм
-
-1. **Инициализация**  
-   Создать пустой список LT_WORDS для хранения записей с полями:  
-   - WORD_ID (NUMC, 3) — счётчик, первичный ключ, начинается с 1  
-   - LEMMA_ID (CHAR, 8)  
-   - INPUT_WORD (CHAR, 40)  
-   - PART_OF_SPEECH (CHAR, 4)  
-   - CASE (CHAR, 4)  
-   - ANIMATION (CHAR, 4)  
-   - KIND (CHAR, 4)  
-   - MEASURE_OF_NUMBER (CHAR, 4)
-
-2. **Разбор XML-строки леммы (lemmaXml)**  
-   2.1. Извлечь значение атрибута `id` из тега `<lemma>`, сохранить как `lemmaId`.  
-   2.2. Извлечь содержимое тега `<l>` и из него получить список тегов `<g v="..."/>` — сохранить как `lemmaTags`.  
-   2.3. Извлечь все теги `<f t="...">...</f>` — каждая такая форма соответствует словоформе.  
-   
-3. **Определение части речи (PART_OF_SPEECH)**  
-   В списке `lemmaTags` найти первый тег из множества:  
-   `NOUN, ADJF, VERB, PREP, PRTF, NUMR, CONJ, PRCL, COMP, GRND, INFN, PRTS, ADVB, ADJS, NPRO, PRED, INTJ`  
-   Если не найден — установить "0000". Результат сохранить как `posTag`.
-
-4. **Обработка каждой формы `<f t="inputWord">`**  
-   Для каждой формы:  
-   4.1. Считать значение атрибута `t` — это `inputWord`.  
-   4.2. Если `inputWord` совпадает с искомым словом (например, с переменной `inputWord` из контекста), то:  
-       - Извлечь теги `<g v="..."/>` внутри формы — сохранить как `tagList`.  
-       - Заменить в `inputWord` символы `-` на `@` (если есть).  
-       - Создать запись для LT_WORDS:  
-         - WORD_ID = следующий по счёту номер (начиная с 1)  
-         - LEMMA_ID = `lemmaId`  
-         - INPUT_WORD = `inputWord` (после замены)  
-         - PART_OF_SPEECH = `posTag`  
-         - CASE, ANIMATION, KIND, MEASURE_OF_NUMBER — определяются в зависимости от части речи:  
-           
-           **Если `posTag == "VERB"`:**  
-           - CASE = `"0000"` (пропускается)  
-           - ANIMATION = `"0000"` (пропускается)  
-           - KIND = первый из тегов `masc`, `femn`, `neut` в `tagList` или `"0000"`  
-           - MEASURE_OF_NUMBER = первый из тегов `sing`, `plur` в `tagList` или `"0000"`  
-           
-           **Иначе (для NOUN, ADJF и др.):**  
-           - CASE = первый из тегов `nomn`, `gent`, `datv`, `accs`, `ablt`, `loct` в `tagList` или `"0000"`  
-           - ANIMATION = если в `lemmaTags` есть `anim` — `"anim"`, иначе если есть `inan` — `"inan"`, иначе `"0000"`  
-           - KIND = первый из тегов `masc`, `femn`, `neut` в `lemmaTags` или `"0000"`  
-           - MEASURE_OF_NUMBER = первый из тегов `sing`, `plur` в `tagList` или `"0000"`  
-       
-       - Добавить сформированную запись в LT_WORDS.
-
-5. **По окончании обработки всех форм вернуть LT_WORDS с заполненными записями.**
-
----
-
-### Пример псевдокода алгоритма
-
-```plaintext
-Создать LT_WORDS как пустой список
-WORD_ID_COUNTER = 1
-
-lemmaId = извлечь из lemmaXml атрибут id из <lemma>
-
-lemmaTags = извлечь все <g v="..."/> из <l> внутри lemmaXml
-
-posTag = первый из (NOUN, ADJF, VERB, PREP, PRTF, NUMR, CONJ, PRCL, COMP, GRND, INFN, PRTS, ADVB, ADJS, NPRO, PRED, INTJ) в lemmaTags
-если не найден - "0000"
-
-для каждой формы <f t="formWord"> в lemmaXml:
-    если formWord == inputWord:
-        tagList = извлечь все <g v="..."/> внутри формы
-
-        inputWordClean = formWord.replace("-", "@")
-
-        если posTag == "VERB":
-            CASE = "0000"
-            ANIMATION = "0000"
-            KIND = первый из (masc, femn, neut) в tagList или "0000"
-            MEASURE_OF_NUMBER = первый из (sing, plur) в tagList или "0000"
-        иначе:
-            CASE = первый из (nomn, gent, datv, accs, ablt, loct) в tagList или "0000"
-            если "anim" в lemmaTags:
-                ANIMATION = "anim"
-            иначе если "inan" в lemmaTags:
-                ANIMATION = "inan"
-            иначе
-                ANIMATION = "0000"
-            KIND = первый из (masc, femn, neut) в lemmaTags или "0000"
-            MEASURE_OF_NUMBER = первый из (sing, plur) в tagList или "0000"
-
-        Добавить запись в LT_WORDS:
-            WORD_ID = WORD_ID_COUNTER
-            LEMMA_ID = lemmaId
-            INPUT_WORD = inputWordClean
-            PART_OF_SPEECH = posTag
-            CASE = CASE
-            ANIMATION = ANIMATION
-            KIND = KIND
-            MEASURE_OF_NUMBER = MEASURE_OF_NUMBER
-
-        WORD_ID_COUNTER += 1
-
-Вернуть LT_WORDS
-```
-
----
-
-### Краткое описание для реализации на C#
-
-- Использовать регулярные выражения для парсинга XML (как в вашем примере).
-- Использовать списки и структуры (классы или анонимные типы) для хранения записей.
-- Счётчик WORD_ID увеличивать на каждой итерации.
-- Формировать строки или объекты записи с нужными полями.
-- В конце вернуть или сохранить LT_WORDS.
-
----
-
-Если нужно, могу помочь с конкретной реализацией на C# или SQL-запросом для вставки в базу.
-
-
-напиши алгоритм по следующему примеру и условию.
-пример алгоритма:
+Напиши код по примеру и алгоритму:
+пример:
 Разбить строку ввода S_ZZMR в таблицу LT_POSITIONS по пробелу.
 Создать переменную LV_COUNT(INTEGER, 2) = <количество записей в таблице LT_POSITIONS>.
 Создать переменную LV_END_STORAGE_COUNT(INTEGER, 2)= <количество записей LT_POSITIONS-WORKSHOP имеющих длину в три символа>.
@@ -200,82 +77,117 @@ o	Найти в T001L запись:
 	T001L-LGPRO=+1(2) LT_POSITION-WORKSHOP +”20”
 o	Если запись не найдена:
 	Вывести ошибку «Не существует конечного склада <+1(2) LT_POSITION-WORKSHOP +”20”>»
-Условие:
-распарсить строку вида:
-<lemma id="320957" rev="320957"><l t="синий"><g v="ADJF"/><g v="Qual"/></l><f t="синий"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="синего"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="синему"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="синего"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="синий"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="синим"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="синем"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="синяя"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="синюю"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="синею"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-ey"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="синее"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="синего"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="синему"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="синее"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="синим"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="синем"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="синие"><g v="plur"/><g v="nomn"/></f><f t="синих"><g v="plur"/><g v="gent"/></f><f t="синим"><g v="plur"/><g v="datv"/></f><f t="синих"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="синие"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="синими"><g v="plur"/><g v="ablt"/></f><f t="синих"><g v="plur"/><g v="loct"/></f></lemma>
-по алгоритму на c#:
-var result = new List<string>();
 
-        // Извлекаем ID леммы
-        var lemmaIdMatch = Regex.Match(lemmaXml, @"<lemma id=""(\d+)""");
-        string lemmaId = lemmaIdMatch.Success ? lemmaIdMatch.Groups[1].Value : "0000";
+Создать переменную LV_WORKSHOP(CHAR, 3) = 0.
+Создать переменную LV_NRMARSH(NUMC, 2)=0.
+Создать переменную LV_WORKSHOP_NEXT(CHAR, 3) = 0.
+Создать переменную LV_INCREMENT (INTEGER, 2) = 1.
 
-        // Извлекаем все формы слова из XML
-        var forms = Regex.Matches(lemmaXml, @"<f t=""([^""]+)"">(.*?)</f>");
-        
-        // Извлекаем основной тег части речи и другие общие теги из lemma
-        var lemmaMatch = Regex.Match(lemmaXml, @"<l t=""[^""]+"">(.*?)</l>");
-        var lemmaTags = Regex.Matches(lemmaMatch.Groups[1].Value, @"<g v=""([^""]+)""")
-            .Cast<Match>().Select(t => t.Groups[1].Value).ToList();
-        
-        // Определяем часть речи (добавляем поддержку VERB)
-		string posTag = lemmaTags.FirstOrDefault(t => t == "NOUN" || t == "ADJF" || t == "VERB" || t == "PREP"|| t == "PRTF"|| t == "NUMR"|| t == "CONJ"|| t == "PRCL" || t=="COMP" || t== "GRND" || t == "INFN" || t == "PRTS" || t == "ADVB" || t =="ADJS" || t == "NPRO" || t == "PRED" || t == "INTJ") ?? "0000";
-        foreach (Match form in forms)
-        {
-            string formWord = form.Groups[1].Value;
-            if (formWord==inputWord)
-            {
-                // Извлекаем теги для данной формы
-                var tags = Regex.Matches(form.Groups[2].Value, @"<g v=""([^""]+)""");
-                var tagList = tags.Cast<Match>().Select(t => t.Groups[1].Value).ToList();
 
-                // Формируем базовую строку с ID леммы
-                //string baseResult = $"{lemmaId}-{inputWord}-{posTag}";
-				inputWord=inputWord.Replace("-","@");
-                string baseResult = String.Format("{0}-{1}-{2}", lemmaId, inputWord, posTag);
-
-                // Для глаголов добавляем специфичные теги
-                if (posTag == "VERB")
-                {
-                    // Добавляем род (только для прошедшего времени)
-                    string genderTag = tagList.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
-                    //baseResult += $"-0000-0000-{genderTag}"; // Пропускаем падеж и одушевленность
-                    baseResult += String.Format("-0000-0000-{0}", genderTag); // Пропускаем падеж и одушевленность
-                    // Добавляем число
-                    string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
-                    //baseResult += $"-{numberTag}";
-                    baseResult += String.Format("-{0}", numberTag);
-                }
-                else
-                {
-                    // Обработка для существительных и прилагательных (как было раньше)
-                    string caseTag = tagList.FirstOrDefault(t => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(t)) ?? "0000";
-                    //baseResult += $"-{caseTag}";
-                    baseResult += String.Format("-{0}", caseTag);
-                    string animTag = lemmaTags.Contains("anim") ? "anim" : lemmaTags.Contains("inan") ? "inan" : "0000";
-                    //baseResult += $"-{animTag}";
-                    baseResult += String.Format("-{0}", animTag);
-                    string genderTag = lemmaTags.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
-                    //baseResult += $"-{genderTag}";
-                    baseResult += String.Format("-{0}", genderTag);
-
-                    string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
-                    //baseResult += $"-{numberTag}";
-                    baseResult += String.Format("-{0}", numberTag);
-                }
-
-                result.Add(baseResult);
-            }
-        }
-
-        return result;
-в результате работы должны быть добавлена запись в таблицу LT_WORDS с полями:
-1	WORD_ID	Идентификатор слова	-	NUMC	3	Первичный ключ.
-Счётчик.
-2	LEMMA_ID	Id-индекс леммы	-	CHAR	8	-
-3	INPUT_WORD	Содержание слова	-	CHAR	40	-
-4	PART_OF_SPEECH	Часть речи	-	CHAR	4	-
-5	CASE	Падеж слова	-	CHAR	4	-
-6	ANIMATION	Одушевленность/неодушевленность 	-	CHAR	4	-
-7	KIND	Пол слова	-	CHAR	4	-
-8	MEASURE_OF_NUMBER	Мера численности	-	CHAR	4	-
+Если LV_WORKSHOP_18_FLAG =0
+То:
+{
+•	Если LV_WORKSHOP_PRENULTIMATE <> +1(2)LV_WORKSHOP_ LAST и LV_WORKSHOP_ LAST<>”179” и <>”195”:
+o	Вывести сообщение об ошибке «Невозможный маршрут: предпоследний и последний цеха должны совпадать, иначе предпоследним ставится цех 18»
+Выполнять пока LV_INCREMENT<LV_COUNT
+{
+Если LV_INCREMENT<= LV_COUNT -2:
+{
+Выбрать запись в таблице LT_POSITIONS по условию:
+•	LT_POSITIONS-POSITION_ID=LV_INCREMENT 
+Сохранить значение текущего цеха в переменной:
+•	LV_WORKSHOP = LT_POSITIONS-WORKSHOP
+Выбрать запись в таблице LT_POSITIONS по условию:
+•	LT_POSITIONS-POSITION_ID=LV_INCREMENT+1
+Сохранить значение следующего цеха в переменной
+•	LV_WORKSHOP_NEXT = LT_POSITIONS-WORKSHOP
+o	Если LV_WORKSHOP= LV_WORKSHOP_NEXT:
+	Вывести сообщение об ошибке «В маршруте не может быть два одинаковых цеха подряд <LT_POSITIONS-WORKSHOP>»
+o	Иначе:
+	Если LV_WORKSHOP<>”95” И <>”79” И <>”76”:
+•	Добавить в LT_RESULT запись:
+o	LT_RESULT- NRMARSH = LV_INCREMENT *10
+o	LT_RESULT-LGPRO = LV_WORKSHOP_NEXT +”20”
+o	LT_RESULT-DISPO = LV_WORKSHOP
+Увеличить счётчик LV_INCREMENT на 1. 
+}
+Иначе:
+•	Найти в таблице LT_POSITIONS запись:
+•	LT_POSITIONS-POSITION_ID=LV_INCREMENT 
+•	Если LV_WORKSHOP_LAST=”195” или =”179”:
+o	Добавить в LT_RESULT запись:
+	LT_RESULT- NRMARSH = 00
+	LT_RESULT-LGPRO = “00”+1(2)LT_POSITIONS-WORKSHOP
+	LT_RESULT-DISPO = LT_POSITIONS-WORKSHOP
+•	Иначе:
+o	Добавить в LT_RESULT запись:
+	LT_RESULT- NRMARSH = 00
+	LT_RESULT-LGPRO = +1(2)LT_POSITIONS-WORKSHOP+”20”
+	LT_RESULT-DISPO = LT_POSITIONS-WORKSHOP
+}
+}
+Иначе:
+{
+Выполнить LV_COUNT-(LV_WORKSHOP_18_FLAG+ LV_END_STORAGE_COUNT) раз:
+{
+Выбрать запись в таблице LT_POSITIONS по условию:
+•	LT_POSITIONS-POSITION_ID=LV_INCREMENT +1
+Сохранить значение следующего цеха в переменной
+•	LV_WORKSHOP_NEXT= LT_POSITIONS-WORKSHOP
+Выбрать запись в таблице LT_POSITIONS по условию:
+•	LT_POSITIONS-POSITION_ID=LV_INCREMENT 
+Сохранить значение текущего цеха в переменной
+•	LV_WORKSHOP = LT_POSITIONS-WORKSHOP
+Если LV_WORKSHOP= LV_WORKSHOP_NEXT:
+•	Вывести сообщение об ошибке «В маршруте не может быть два одинаковых цеха <LT_POSITIONS-WORKSHOP> подряд»
+Иначе:
+•	Если LV_WORKSHOP_NEXT=”18”:
+o	Добавить в LT_RESULT запись:
+o	LT_RESULT- NRMARSH = 00
+o	LT_RESULT-DISPO = LV_WORKSHOP
+•	Иначе:
+o	Добавить в LT_RESULT запись:
+	LT_RESULT- NRMARSH = LV_INCREMENT *10
+	LT_RESULT-DISPO = LV_WORKSHOP
+	LT_RESULT-LGPRO=LV_WORKSHOP_NEXT+”20”
+Увеличить счётчик LV_INCREMENT на 1.
+}
+•	Найти в LT_POSITIONS запись, где
+•	LT_POSITIONS-WORKSHOP= “142” или =”117”
+•	Если запись не найдена:
+o	Найти в LT_POSITIONS запись, где:
+o	LT_POSITIONS-WORKSHOP= “143” или =”113” или =”121”
+o	Если запись не найдена:
+	Найти в LT_POSITIONS запись, где:
+	LT_POSITIONS-WORKSHOP= “129” или =”125”
+	Если запись не найдена:
+•	Найти в LT_POSITIONS запись, где:
+•	LT_POSITIONS-POSITION_ID=LV_INCREMENT+2
+•	Если LT_POSITIONS-WORKSHOP =”142” или =”143”:
+o	Найти в LT_RESULT запись, где:
+	LT_RESULT-NRMATSH=00
+o	Изменить запись:
+	LT_RESULT-LGPRO = “18”+1(2) LT_POSITIONS-WORKSHOP
+•	Иначе:
+o	Найти в LT_RESULT запись, где:
+	LT_RESULT-NRMATSH=00
+o	Изменить запись:
+	LT_RESULT-LGPRO = +1(2) LT_POSITIONS-WORKSHOP +”20”
+}
+Вывести пользователю на экран таблицу LT_RESULT
+;
+Вместо массивов и списков существуют только таблицы
+Алгоритм действий:
+на вход подаётся таблица LT_ LEMMAS_PER_ORDER «Количество уникальных лемм на порядковый номер»
+Со следующей структурой
+№ п/п	Поле	Краткое описание	Элемент данных	Тип данных	Длина	Комментарий
+1	POSITION_ID	Идентификатор позиции	-	NUMC	3	Первичный ключ. Счетчик
+2	ORDER	Порядок слова в записи	-	INTEGER	2	-
+3	LEMMA_ID	Id-индекс леммы	-	CHAR	8	-
+Типичным содержанием будет:
+1 0 31
+2 0 45
+3 1 13
+4 2 11
+5 2 92
+Необходим алгоритм, выводящий все возможные варианты расположений этих записей, НО по возрастающему ORDER И в полученной комбинации каждый ORDER может встречаться только один раз
