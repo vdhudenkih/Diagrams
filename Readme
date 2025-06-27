@@ -1,3 +1,126 @@
+Ниже приведён алгоритм обработки входной XML-строки (леммы с формами и тегами) по вашему примеру и условию, с последующим формированием записей для вставки в таблицу LT_WORDS.
+
+---
+
+### Алгоритм
+
+1. **Инициализация**  
+   Создать пустой список LT_WORDS для хранения записей с полями:  
+   - WORD_ID (NUMC, 3) — счётчик, первичный ключ, начинается с 1  
+   - LEMMA_ID (CHAR, 8)  
+   - INPUT_WORD (CHAR, 40)  
+   - PART_OF_SPEECH (CHAR, 4)  
+   - CASE (CHAR, 4)  
+   - ANIMATION (CHAR, 4)  
+   - KIND (CHAR, 4)  
+   - MEASURE_OF_NUMBER (CHAR, 4)
+
+2. **Разбор XML-строки леммы (lemmaXml)**  
+   2.1. Извлечь значение атрибута `id` из тега `<lemma>`, сохранить как `lemmaId`.  
+   2.2. Извлечь содержимое тега `<l>` и из него получить список тегов `<g v="..."/>` — сохранить как `lemmaTags`.  
+   2.3. Извлечь все теги `<f t="...">...</f>` — каждая такая форма соответствует словоформе.  
+   
+3. **Определение части речи (PART_OF_SPEECH)**  
+   В списке `lemmaTags` найти первый тег из множества:  
+   `NOUN, ADJF, VERB, PREP, PRTF, NUMR, CONJ, PRCL, COMP, GRND, INFN, PRTS, ADVB, ADJS, NPRO, PRED, INTJ`  
+   Если не найден — установить "0000". Результат сохранить как `posTag`.
+
+4. **Обработка каждой формы `<f t="inputWord">`**  
+   Для каждой формы:  
+   4.1. Считать значение атрибута `t` — это `inputWord`.  
+   4.2. Если `inputWord` совпадает с искомым словом (например, с переменной `inputWord` из контекста), то:  
+       - Извлечь теги `<g v="..."/>` внутри формы — сохранить как `tagList`.  
+       - Заменить в `inputWord` символы `-` на `@` (если есть).  
+       - Создать запись для LT_WORDS:  
+         - WORD_ID = следующий по счёту номер (начиная с 1)  
+         - LEMMA_ID = `lemmaId`  
+         - INPUT_WORD = `inputWord` (после замены)  
+         - PART_OF_SPEECH = `posTag`  
+         - CASE, ANIMATION, KIND, MEASURE_OF_NUMBER — определяются в зависимости от части речи:  
+           
+           **Если `posTag == "VERB"`:**  
+           - CASE = `"0000"` (пропускается)  
+           - ANIMATION = `"0000"` (пропускается)  
+           - KIND = первый из тегов `masc`, `femn`, `neut` в `tagList` или `"0000"`  
+           - MEASURE_OF_NUMBER = первый из тегов `sing`, `plur` в `tagList` или `"0000"`  
+           
+           **Иначе (для NOUN, ADJF и др.):**  
+           - CASE = первый из тегов `nomn`, `gent`, `datv`, `accs`, `ablt`, `loct` в `tagList` или `"0000"`  
+           - ANIMATION = если в `lemmaTags` есть `anim` — `"anim"`, иначе если есть `inan` — `"inan"`, иначе `"0000"`  
+           - KIND = первый из тегов `masc`, `femn`, `neut` в `lemmaTags` или `"0000"`  
+           - MEASURE_OF_NUMBER = первый из тегов `sing`, `plur` в `tagList` или `"0000"`  
+       
+       - Добавить сформированную запись в LT_WORDS.
+
+5. **По окончании обработки всех форм вернуть LT_WORDS с заполненными записями.**
+
+---
+
+### Пример псевдокода алгоритма
+
+```plaintext
+Создать LT_WORDS как пустой список
+WORD_ID_COUNTER = 1
+
+lemmaId = извлечь из lemmaXml атрибут id из <lemma>
+
+lemmaTags = извлечь все <g v="..."/> из <l> внутри lemmaXml
+
+posTag = первый из (NOUN, ADJF, VERB, PREP, PRTF, NUMR, CONJ, PRCL, COMP, GRND, INFN, PRTS, ADVB, ADJS, NPRO, PRED, INTJ) в lemmaTags
+если не найден - "0000"
+
+для каждой формы <f t="formWord"> в lemmaXml:
+    если formWord == inputWord:
+        tagList = извлечь все <g v="..."/> внутри формы
+
+        inputWordClean = formWord.replace("-", "@")
+
+        если posTag == "VERB":
+            CASE = "0000"
+            ANIMATION = "0000"
+            KIND = первый из (masc, femn, neut) в tagList или "0000"
+            MEASURE_OF_NUMBER = первый из (sing, plur) в tagList или "0000"
+        иначе:
+            CASE = первый из (nomn, gent, datv, accs, ablt, loct) в tagList или "0000"
+            если "anim" в lemmaTags:
+                ANIMATION = "anim"
+            иначе если "inan" в lemmaTags:
+                ANIMATION = "inan"
+            иначе
+                ANIMATION = "0000"
+            KIND = первый из (masc, femn, neut) в lemmaTags или "0000"
+            MEASURE_OF_NUMBER = первый из (sing, plur) в tagList или "0000"
+
+        Добавить запись в LT_WORDS:
+            WORD_ID = WORD_ID_COUNTER
+            LEMMA_ID = lemmaId
+            INPUT_WORD = inputWordClean
+            PART_OF_SPEECH = posTag
+            CASE = CASE
+            ANIMATION = ANIMATION
+            KIND = KIND
+            MEASURE_OF_NUMBER = MEASURE_OF_NUMBER
+
+        WORD_ID_COUNTER += 1
+
+Вернуть LT_WORDS
+```
+
+---
+
+### Краткое описание для реализации на C#
+
+- Использовать регулярные выражения для парсинга XML (как в вашем примере).
+- Использовать списки и структуры (классы или анонимные типы) для хранения записей.
+- Счётчик WORD_ID увеличивать на каждой итерации.
+- Формировать строки или объекты записи с нужными полями.
+- В конце вернуть или сохранить LT_WORDS.
+
+---
+
+Если нужно, могу помочь с конкретной реализацией на C# или SQL-запросом для вставки в базу.
+
+
 напиши алгоритм по следующему примеру и условию.
 пример алгоритма:
 Разбить строку ввода S_ZZMR в таблицу LT_POSITIONS по пробелу.
