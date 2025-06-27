@@ -1,7 +1,7 @@
-напиши аналог программы:
+напиши подробно, что делает этот код:
 foreach (var variant in positionVariants[currentPosition])
-        {
-            var newCombination = new List<string>(currentCombination) { variant };
-            GenerateCombinationsHelper(positionVariants, currentPosition + 1, newCombination, result);
-        }
-на ЯП ABAP
+{
+    var newCombination = new List<string>(currentCombination) { variant };
+    GenerateCombinationsHelper(positionVariants, currentPosition + 1, newCombination, result);
+}
+
