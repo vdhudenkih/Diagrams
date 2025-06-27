@@ -1,3 +1,151 @@
+Понял, нужно написать код и алгоритм в стиле вашего примера — с переменными, условиями, циклами и сообщениями, описанными пошагово, с акцентом на таблицы и переменные, как в ABAP-подобном стиле.
+
+---
+
+# Алгоритм и код для задачи построения всех вариантов с условием
+
+**Вход:** таблица LT_LEMMAS_PER_ORDER с полями POSITION_ID (NUMC 3), ORDER (INTEGER 2), LEMMA_ID (CHAR 8).
+
+**Задача:** построить все варианты, где из каждой группы записей с одинаковым ORDER выбирается ровно одна запись, при этом порядок вариантов строго по возрастанию ORDER.
+
+---
+
+## Алгоритм (пошагово)
+
+1. Создать внутреннюю таблицу LT_GROUPS с полями:
+   - ORDER (INTEGER 2)
+   - LT_RECORDS — таблица записей для данного ORDER
+
+2. Заполнить LT_GROUPS:
+   - Для каждого уникального ORDER из LT_LEMMAS_PER_ORDER
+     - Собрать все записи с этим ORDER в таблицу LT_RECORDS
+     - Добавить запись в LT_GROUPS с ORDER и LT_RECORDS
+
+3. Отсортировать LT_GROUPS по ORDER по возрастанию.
+
+4. Создать внутреннюю таблицу LT_COMBINATION для хранения текущей комбинации.
+
+5. Создать внутреннюю таблицу LT_RESULT для хранения всех вариантов.
+
+6. Запустить рекурсивную процедуру Generate_Combinations с параметром LEVEL=1.
+
+---
+
+## Рекурсивная процедура Generate_Combinations:
+
+- Вход:
+  - LEVEL — текущий уровень (номер группы в LT_GROUPS)
+  - LT_GROUPS — таблица групп
+  - LT_COMBINATION — текущая комбинация (записи)
+
+- Логика:
+  - Если LEVEL > количество групп в LT_GROUPS:
+    - Добавить LT_COMBINATION в LT_RESULT (копировать)
+    - Вернуться
+
+  - Иначе:
+    - Получить группу LT_GROUPS[LEVEL]
+    - Для каждой записи в группе:
+      - Добавить запись в LT_COMBINATION
+      - Вызвать Generate_Combinations с LEVEL+1
+      - Удалить последнюю запись из LT_COMBINATION (откат)
+
+---
+
+## Код в стиле вашего примера (ABAP-подобный псевдокод):
+
+```abap
+" Объявление таблиц и переменных
+DATA: LT_LEMMAS_PER_ORDER TYPE TABLE OF ty_lemma WITH EMPTY KEY,
+      LT_GROUPS TYPE TABLE OF ty_group WITH EMPTY KEY,
+      LT_COMBINATION TYPE TABLE OF ty_lemma WITH EMPTY KEY,
+      LT_RESULT TYPE TABLE OF ty_variant WITH EMPTY KEY.
+
+DATA: LV_GROUP_COUNT TYPE i,
+      LV_LEVEL TYPE i.
+
+" 1. Сгруппировать записи по ORDER
+
+CLEAR LT_GROUPS.
+LOOP AT LT_LEMMAS_PER_ORDER INTO DATA(LS_LEMMA).
+  READ TABLE LT_GROUPS WITH KEY ORDER = LS_LEMMA-ORDER INTO DATA(LS_GROUP).
+  IF SY-SUBRC <> 0.
+    " Создать новую группу
+    CLEAR LS_GROUP.
+    LS_GROUP-ORDER = LS_LEMMA-ORDER.
+    CLEAR LS_GROUP-LT_RECORDS.
+    APPEND LS_LEMMA TO LS_GROUP-LT_RECORDS.
+    APPEND LS_GROUP TO LT_GROUPS.
+  ELSE.
+    " Добавить запись в существующую группу
+    APPEND LS_LEMMA TO LS_GROUP-LT_RECORDS.
+    MODIFY LT_GROUPS FROM LS_GROUP TRANSPORTING LT_RECORDS WHERE ORDER = LS_GROUP-ORDER.
+  ENDIF.
+ENDLOOP.
+
+" 2. Отсортировать группы по ORDER
+SORT LT_GROUPS BY ORDER.
+
+" 3. Получить количество групп
+LV_GROUP_COUNT = LINES( LT_GROUPS ).
+
+" 4. Рекурсивная процедура генерации вариантов
+FORM generate_combinations USING IV_LEVEL TYPE i.
+
+  DATA: LS_GROUP TYPE ty_group,
+        LS_LEMMA TYPE ty_lemma.
+
+  " Если уровень выше максимума - сохранить комбинацию
+  IF IV_LEVEL > LV_GROUP_COUNT.
+    " Добавить копию LT_COMBINATION в LT_RESULT
+    APPEND LINES OF LT_COMBINATION TO LT_RESULT.
+    RETURN.
+  ENDIF.
+
+  " Получить группу текущего уровня
+  READ TABLE LT_GROUPS INDEX IV_LEVEL INTO LS_GROUP.
+  IF SY-SUBRC <> 0.
+    RETURN.
+  ENDIF.
+
+  " Перебор записей группы
+  LOOP AT LS_GROUP-LT_RECORDS INTO LS_LEMMA.
+    " Добавить запись в комбинацию
+    APPEND LS_LEMMA TO LT_COMBINATION.
+
+    " Рекурсивный вызов для следующего уровня
+    PERFORM generate_combinations USING IV_LEVEL + 1.
+
+    " Удалить последнюю запись (откат)
+    DELETE LT_COMBINATION INDEX LINES( LT_COMBINATION ).
+  ENDLOOP.
+
+ENDFORM.
+
+" 5. Запуск генерации вариантов
+PERFORM generate_combinations USING 1.
+
+" 6. Вывод результатов
+LOOP AT LT_RESULT INTO DATA(LS_RESULT).
+  WRITE: / LS_RESULT-POSITION_ID, LS_RESULT-ORDER, LS_RESULT-LEMMA_ID.
+ENDLOOP.
+```
+
+---
+
+## Комментарии
+
+- В LT_GROUPS каждая запись содержит ORDER и внутреннюю таблицу LT_RECORDS с записями для этого ORDER.
+- Рекурсивная процедура перебирает все варианты, выбирая по одному элементу из каждой группы, сохраняя порядок по ORDER.
+- LT_COMBINATION — текущая комбинация.
+- LT_RESULT — накопитель всех вариантов (можно выводить сразу внутри рекурсии, если память ограничена).
+- Сообщения об ошибках и проверки можно добавить по мере необходимости.
+
+---
+
+Если нужно, могу помочь сделать это под конкретный язык (например, ABAP) с реальными типами и структурами.
+
+
 Напиши код по примеру и алгоритму:
 пример:
 Разбить строку ввода S_ZZMR в таблицу LT_POSITIONS по пробелу.
