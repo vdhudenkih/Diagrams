@@ -1,121 +1,158 @@
-REPORT zcombine_lemmas.
+напиши алгоритм по следующему примеру и условию.
+пример алгоритма:
+Разбить строку ввода S_ZZMR в таблицу LT_POSITIONS по пробелу.
+Создать переменную LV_COUNT(INTEGER, 2) = <количество записей в таблице LT_POSITIONS>.
+Создать переменную LV_END_STORAGE_COUNT(INTEGER, 2)= <количество записей LT_POSITIONS-WORKSHOP имеющих длину в три символа>.
+Создать переменную LV_WORKSHOP_18_FLAG(INTEGER, 1) = 0.
+Создать переменную LV_PURCHASING_ORGS_FLAG(CHAR, 3) = 0.
+Создать переменную LV_WORKSHOP_18_ID(NUMC, 10)=0.
+Создать переменную LV_WORKSHOP_PRENULTIMATE(CHAR, 3) = 0.
+Создать переменную LV_WORKSHOP_LAST(CHAR, 3) = 0.
+Создать переменную LV_PURCHASING_ORGS_COUNT(INTEGER, 2) = <количество записей LT_POSITIONS-WORKSHOP, равных 79, 95, 76, 179, 195>.
+Если LV_PURCHASING_ORGS_COUNT>1:
+•	Вывести сообщение об ошибке: «В маршруте может быть не более одной закупочной организации»
+Найти запись в таблице LT_POSITIONS по условию:
+•	LT_POSITIONS- POSITION_ID = LV_COUNT
+Сохранить значение последнего цеха в переменной:
+•	LV_WORKSHOP_ LAST = LT_POSITION-WORKSHOP
 
-TYPES: BEGIN OF ty_lemma,
-         position_id TYPE numc3,
-         order       TYPE i,
-         lemma_id    TYPE char8,
-       END OF ty_lemma.
+Выбрать из LT_POSITIONS запись по условию:
+•	LT_POSITIONS- WORKSHOP = “79” или
+•	LT_POSITIONS- WORKSHOP = “95” или
+•	LT_POSITIONS- WORKSHOP = “76” или
+•	LT_POSITIONS- WORKSHOP = “179” или
+•	LT_POSITIONS- WORKSHOP = “195” или
+Если запись найдена:
+•	Устанавливаем флаг наличия закупочных организаций в положение TRUE:
+o	LV_PURCHASING_ORGS_FLAG =”1”
+•	Если LT_POSITIONS- POSITION_ID <> “1” и <> LV_COUNT:
+o	Вывести сообщение об ошибке: «Закупочные организации могут стоять либо в начале маршрута, либо в конце»
+Выбрать из LT_POSITIONS запись по условию:
+•	LT_POSITIONS- WORKSHOP = “18”
+Если запись найдена:
+Устанавливаем флаг наличия 18 цеха в положение TRUE:
+•	LV_WORKSHOP_18_FLAG=1
+Если запись не найдена:
+•	Если LV_END_STORAGE_COUNT>1:
+o	Вывести сообщение об ошибке «Наличие более чем одного конечного склада может быть только в случае наличия 18 цеха»
+Если LV_WORKSHOP_18_FLAG=1 и (LV_WORKSHOP_ LAST =”195” или LV_WORKSHOP_ LAST =”179”):
+•	Вывести сообщение об ошибке: «Наличие закупочных организаций в конце и 18 цеха в одном маршруте недопустимо»
+Сохраним индекс 18 цеха в переменной:
+•	LV_WORKSHOP_18_ID = LT_POSITIONS- POSITION_ID
+Найти запись в таблице LT_POSITIONS:
+•	LT_POSITIONS- POSITION_ID = LV_COUNT-1
+Сохраним значение предпоследнего цеха:
+•	LV_WORKSHOP_PRENULTIMATE= LT_POSITIONS-WORKSHOP
+Если LV_COUNT<2 или LV_COUNT>10+ LV_WORKSHOP_18_FLAG:
+•	Вывести сообщение об ошибке «Некорректный ввод: число записей не может быть меньше двух или больше десяти»
+Для записей у которых LT_POSITIONS-POSITION_ID<=LV_COUNT –(LV_WORKSHOP_18_FLAG+ LV_END_STORAGE_COUNT):
+{
+•	Найти в T024D запись:
+o	T024D -DISPO = LT_POSITIONS-WORKSHOP
+•	Если запись не найдена:
+o	Вывести сообщение об ошибке «Цех <LT_POSITIONS-WORKSHOP> не существует»
+}
 
-DATA: lt_lemmas_per_order TYPE TABLE OF ty_lemma WITH EMPTY KEY,
-      ls_lemma            TYPE ty_lemma.
+Создать переменную LV_WORKSHOP_2_PREVIOUS(CHAR, 3) = 0.
+Если LV_WORKSHOP_18_ID<>LV_COUNT–(LV_WORKSHOP_18_FLAG+ LV_END_STORAGE_COUNT)+1
+То:
+•	Вывести ошибку: «18 цех может стоять только на позиции перед конечными цехами»
+Иначе:
+•	Найти запись в таблице LT_POSITIONS по условию:
+o	LT_POSITIONS- POSITION_ID = LV_COUNT -(LV_WORKSHOP_18_FLAG+ LV_END_STORAGE_COUNT)
+•	Сохранить значение цеха перед 18 в переменной:
+o	LV_WORKSHOP_2_PREVIOUS= LT_POSITION-WORKSHOP
+•	Если LV_WORKSHOP_2_PREVIOUS = +1(2) LV_WORKSHOP_ LAST
+и LV_END_STORAGE_COUNT=1:
+o	Вывести ошибку: «Наличие 18 цеха не имеет смысла: он соединяет один и тот же цех»
+Для записей в таблице LT_POSITIONS, у которых:
+•	LT_POSITIONS- POSITION_ID>LV_COUNT - LV_END_STORAGE_COUNT
+Выполнить:
+•	Если +(1) LT_POSITION-WORKSHOP <>”1”:
+o	Вывести сообщение об ошибке: «Цех <LT_POSITIONS-WORKSHOP> должен начинаться с 1»
+•	Если LT_POSITION-WORKSHOP = “176”:
+o	Вывести ошибку «Не существует конечного склада <”00”+1(2) LT_POSITION-WORKSHOP>»
+•	Если LT_POSITION-WORKSHOP <>”179” или <>”195”:
+o	Найти в T001L запись:
+	T001L-LGPRO=+1(2) LT_POSITION-WORKSHOP +”20”
+o	Если запись не найдена:
+	Вывести ошибку «Не существует конечного склада <+1(2) LT_POSITION-WORKSHOP +”20”>»
+Условие:
+распарсить строку вида:
+<lemma id="320957" rev="320957"><l t="синий"><g v="ADJF"/><g v="Qual"/></l><f t="синий"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="синего"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="синему"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="синего"><g v="anim"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="синий"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="синим"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="синем"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="синяя"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="gent"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="datv"/></f><f t="синюю"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="ablt"/></f><f t="синею"><g v="femn"/><g v="sing"/><g v="ablt"/><g v="V-ey"/></f><f t="синей"><g v="femn"/><g v="sing"/><g v="loct"/></f><f t="синее"><g v="neut"/><g v="sing"/><g v="nomn"/></f><f t="синего"><g v="neut"/><g v="sing"/><g v="gent"/></f><f t="синему"><g v="neut"/><g v="sing"/><g v="datv"/></f><f t="синее"><g v="neut"/><g v="sing"/><g v="accs"/></f><f t="синим"><g v="neut"/><g v="sing"/><g v="ablt"/></f><f t="синем"><g v="neut"/><g v="sing"/><g v="loct"/></f><f t="синие"><g v="plur"/><g v="nomn"/></f><f t="синих"><g v="plur"/><g v="gent"/></f><f t="синим"><g v="plur"/><g v="datv"/></f><f t="синих"><g v="anim"/><g v="plur"/><g v="accs"/></f><f t="синие"><g v="inan"/><g v="plur"/><g v="accs"/></f><f t="синими"><g v="plur"/><g v="ablt"/></f><f t="синих"><g v="plur"/><g v="loct"/></f></lemma>
+по алгоритму на c#:
+var result = new List<string>();
 
-" Пример заполнения LT_LEMMAS_PER_ORDER (можно заменить на реальные данные)
-lt_lemmas_per_order = VALUE #( 
-  ( position_id = '001' order = 0 lemma_id = '9'  )
-  ( position_id = '002' order = 0 lemma_id = '18' )
-  ( position_id = '003' order = 0 lemma_id = '21' )
-  ( position_id = '004' order = 1 lemma_id = '14' )
-  ( position_id = '005' order = 1 lemma_id = '16' )
-  ( position_id = '006' order = 2 lemma_id = '34' )
-).
+        // Извлекаем ID леммы
+        var lemmaIdMatch = Regex.Match(lemmaXml, @"<lemma id=""(\d+)""");
+        string lemmaId = lemmaIdMatch.Success ? lemmaIdMatch.Groups[1].Value : "0000";
 
-" --- Определяем уникальные ORDER ---
-DATA: lt_unique_orders TYPE SORTED TABLE OF i WITH UNIQUE KEY table_line,
-      lv_order         TYPE i.
+        // Извлекаем все формы слова из XML
+        var forms = Regex.Matches(lemmaXml, @"<f t=""([^""]+)"">(.*?)</f>");
+        
+        // Извлекаем основной тег части речи и другие общие теги из lemma
+        var lemmaMatch = Regex.Match(lemmaXml, @"<l t=""[^""]+"">(.*?)</l>");
+        var lemmaTags = Regex.Matches(lemmaMatch.Groups[1].Value, @"<g v=""([^""]+)""")
+            .Cast<Match>().Select(t => t.Groups[1].Value).ToList();
+        
+        // Определяем часть речи (добавляем поддержку VERB)
+		string posTag = lemmaTags.FirstOrDefault(t => t == "NOUN" || t == "ADJF" || t == "VERB" || t == "PREP"|| t == "PRTF"|| t == "NUMR"|| t == "CONJ"|| t == "PRCL" || t=="COMP" || t== "GRND" || t == "INFN" || t == "PRTS" || t == "ADVB" || t =="ADJS" || t == "NPRO" || t == "PRED" || t == "INTJ") ?? "0000";
+        foreach (Match form in forms)
+        {
+            string formWord = form.Groups[1].Value;
+            if (formWord==inputWord)
+            {
+                // Извлекаем теги для данной формы
+                var tags = Regex.Matches(form.Groups[2].Value, @"<g v=""([^""]+)""");
+                var tagList = tags.Cast<Match>().Select(t => t.Groups[1].Value).ToList();
 
-LOOP AT lt_lemmas_per_order INTO ls_lemma.
-  INSERT ls_lemma-order INTO TABLE lt_unique_orders.
-ENDLOOP.
+                // Формируем базовую строку с ID леммы
+                //string baseResult = $"{lemmaId}-{inputWord}-{posTag}";
+				inputWord=inputWord.Replace("-","@");
+                string baseResult = String.Format("{0}-{1}-{2}", lemmaId, inputWord, posTag);
 
-DATA(lv_num_orders) = lines( lt_unique_orders ).
+                // Для глаголов добавляем специфичные теги
+                if (posTag == "VERB")
+                {
+                    // Добавляем род (только для прошедшего времени)
+                    string genderTag = tagList.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-0000-0000-{genderTag}"; // Пропускаем падеж и одушевленность
+                    baseResult += String.Format("-0000-0000-{0}", genderTag); // Пропускаем падеж и одушевленность
+                    // Добавляем число
+                    string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{numberTag}";
+                    baseResult += String.Format("-{0}", numberTag);
+                }
+                else
+                {
+                    // Обработка для существительных и прилагательных (как было раньше)
+                    string caseTag = tagList.FirstOrDefault(t => new[] { "nomn", "gent", "datv", "accs", "ablt", "loct" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{caseTag}";
+                    baseResult += String.Format("-{0}", caseTag);
+                    string animTag = lemmaTags.Contains("anim") ? "anim" : lemmaTags.Contains("inan") ? "inan" : "0000";
+                    //baseResult += $"-{animTag}";
+                    baseResult += String.Format("-{0}", animTag);
+                    string genderTag = lemmaTags.FirstOrDefault(t => new[] { "masc", "femn", "neut" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{genderTag}";
+                    baseResult += String.Format("-{0}", genderTag);
 
-" --- Для каждого ORDER собираем массив записей ---
-" Используем внутренний массив массивов (таблицу таблиц)
-" Поскольку нельзя создавать таблицы, используем массивы в памяти
+                    string numberTag = tagList.FirstOrDefault(t => new[] { "sing", "plur" }.Contains(t)) ?? "0000";
+                    //baseResult += $"-{numberTag}";
+                    baseResult += String.Format("-{0}", numberTag);
+                }
 
-TYPES: ty_lemmas_for_order TYPE STANDARD TABLE OF ty_lemma WITH EMPTY KEY,
-       ty_lemmas_for_orders TYPE STANDARD TABLE OF ty_lemmas_for_order WITH EMPTY KEY.
+                result.Add(baseResult);
+            }
+        }
 
-DATA: lt_lemmas_grouped TYPE STANDARD TABLE OF ty_lemmas_for_order WITH EMPTY KEY,
-      lt_current_combination TYPE STANDARD TABLE OF ty_lemma WITH EMPTY KEY.
-
-DATA: lt_order_list TYPE STANDARD TABLE OF i WITH EMPTY KEY.
-
-" Заполним lt_order_list из lt_unique_orders (чтобы иметь нумерованный список)
-lt_order_list = VALUE #( FOR <order> IN lt_unique_orders ( <order> ) ).
-
-" Создадим внутренний массив массивов
-DATA: lt_lemmas_for_order TYPE STANDARD TABLE OF ty_lemma WITH EMPTY KEY.
-
-DATA: lt_all_groups TYPE TABLE OF ty_lemmas_for_order WITH EMPTY KEY.
-
-" Для каждого ORDER сформируем подтаблицу
-DATA: lt_groups TYPE STANDARD TABLE OF ty_lemmas_for_order WITH EMPTY KEY,
-      lt_tmp TYPE ty_lemmas_for_order.
-
-LOOP AT lt_order_list INTO lv_order.
-  CLEAR lt_tmp.
-  LOOP AT lt_lemmas_per_order INTO ls_lemma WHERE order = lv_order.
-    APPEND ls_lemma TO lt_tmp.
-  ENDLOOP.
-  APPEND lt_tmp TO lt_all_groups.
-ENDLOOP.
-
-" --- Рекурсивная процедура перебора комбинаций ---
-
-FORM combine USING iv_level TYPE i
-                     it_groups TYPE STANDARD TABLE OF ty_lemmas_for_order
-                     it_comb TYPE STANDARD TABLE OF ty_lemma.
-
-  DATA: lt_current_group TYPE ty_lemmas_for_order,
-        ls_selected_lemma TYPE ty_lemma.
-
-  " Получаем текущий набор лемм для данного уровня (ORDER)
-  READ TABLE it_groups INTO lt_current_group INDEX iv_level.
-  IF sy-subrc <> 0.
-    RETURN.
-  ENDIF.
-
-  LOOP AT lt_current_group INTO ls_selected_lemma.
-    DATA(it_comb_new) = it_comb.
-    APPEND ls_selected_lemma TO it_comb_new.
-
-    IF iv_level = lv_num_orders.
-      " Вывод комбинации
-      WRITE: / 'Комбинация:'.
-      LOOP AT it_comb_new INTO DATA(ls_out).
-        WRITE: / ls_out-position_id, ls_out-order, ls_out-lemma_id.
-      ENDLOOP.
-      WRITE: / '---------------------------'.
-    ELSE.
-      PERFORM combine USING iv_level + 1 it_groups it_comb_new.
-    ENDIF.
-  ENDLOOP.
-
-ENDFORM.
-
-" --- Запускаем перебор ---
-PERFORM combine USING 1 lt_all_groups VALUE #( ).
-
-
-
-
-
-напиши программу на ABAP по следующему условию:
-есть таблица LT_ LEMMAS_PER_ORDER с полями:
-POSITION_ID	Идентификатор позиции	-	NUMC	3	Первичный ключ. Счетчик
-ORDER	Порядок слова в записи	-	INTEGER	2	-
-LEMMA_ID	Id-индекс леммы	-	CHAR	8	-
-Типичные записи в таблице будут:
-1 0 "9"
-2 0 "18"
-3 0 "21"
-4 1 "14"
-5 1 "16"
-6 2 "34"
-Напиши программу, которая будет комбинировать эти записи всеми возможными способами, НО комбинация состоит только из уникальных ORDER, идущих по возрастанию. Также важно, чтобы ВСЕ существующие и уникальные ORDER учавствовали в комбинации.
-Одной из комбинаций для данного примера будет:
-1 0 "9"
-4 1 "14"
-6 2 "34"
-программа не должны создавать какие либо таблицы
+        return result;
+в результате работы должны быть добавлена запись в таблицу LT_WORDS с полями:
+1	WORD_ID	Идентификатор слова	-	NUMC	3	Первичный ключ.
+Счётчик.
+2	LEMMA_ID	Id-индекс леммы	-	CHAR	8	-
+3	INPUT_WORD	Содержание слова	-	CHAR	40	-
+4	PART_OF_SPEECH	Часть речи	-	CHAR	4	-
+5	CASE	Падеж слова	-	CHAR	4	-
+6	ANIMATION	Одушевленность/неодушевленность 	-	CHAR	4	-
+7	KIND	Пол слова	-	CHAR	4	-
+8	MEASURE_OF_NUMBER	Мера численности	-	CHAR	4	-
