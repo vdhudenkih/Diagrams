@@ -1,3 +1,79 @@
 Напиши программу, которая берёт на вход текстовый файл, содержащий данные формата: число|данные|данные|число
 программа на выходе даёт файл, который будет содержать только число|число
 На вход output.txt на выход output_cut.txt
+
+
+using System;
+using System.IO;
+using System.Text;
+
+namespace CutFile
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            try
+            {
+                string inputFile = "output.txt";
+                string outputFile = "output_cut.txt";
+
+                if (!File.Exists(inputFile))
+                {
+                    Console.WriteLine("Файл не найден: " + inputFile);
+                    Pause();
+                    return 1;
+                }
+
+                using (var reader = new StreamReader(inputFile, Encoding.UTF8, true))
+                using (var writer = new StreamWriter(outputFile, false, Encoding.UTF8))
+                {
+                    string line;
+
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(line))
+                            continue;
+
+                        string[] parts = line.Split('|');
+
+                        // Нужно минимум 2 поля
+                        if (parts.Length < 2)
+                            continue;
+
+                        string first = parts[0].Trim();
+                        string last = parts[parts.Length - 1].Trim();
+
+                        // Проверим, что это числа (по желанию)
+                        int n1, n2;
+                        if (!int.TryParse(first, out n1))
+                            continue;
+
+                        if (!int.TryParse(last, out n2))
+                            continue;
+
+                        writer.Write(n1);
+                        writer.Write("|");
+                        writer.WriteLine(n2);
+                    }
+                }
+
+                Console.WriteLine("Готово. Результат: output_cut.txt");
+                Pause();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка: " + ex.Message);
+                Pause();
+                return 100;
+            }
+        }
+
+        static void Pause()
+        {
+            Console.WriteLine("Нажмите Enter для выхода...");
+            Console.ReadLine();
+        }
+    }
+}
