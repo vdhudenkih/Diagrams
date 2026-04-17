@@ -2,3 +2,343 @@
 чтобы в выходной файл она собирала статистику формата id_lemma|lemma|часть речи(тэг, не переведенный на русский язык)|частота встречи леммы в входном файле
 программа:
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+class Lemmatizer
+{
+    // Кэш: словоформа -> список возможных лемм с информацией
+    static Dictionary<string, List<LemmaInfo>> cache = new Dictionary<string, List<LemmaInfo>>();
+    // Статистика: ключ "id|лемма|часть речи" -> частота
+    static Dictionary<string, int> statistics = new Dictionary<string, int>();
+    // Счётчик обработанных слов для вывода прогресса
+    static int totalWordsProcessed = 0;
+
+    static void Main()
+    {
+        string[] testData = ProcessFile("input.txt");
+        int lineCount = 0;
+
+        foreach (string line in testData)
+        {
+            lineCount++;
+            string inputString = line.ToLower();
+            inputString = inputString.Replace(".", ". ");
+            inputString = inputString.Replace(" - ", " ");
+            inputString = inputString.Replace("(", " ");
+            inputString = inputString.Replace(")", " ");
+            inputString = inputString.Replace("|", "");
+
+            string[] inputMaterials = inputString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] inputMaterialsProcessed = ProcessHyphen(inputMaterials);
+            List<Word> words = new List<Word>();
+
+            for (int i = 0; i < inputMaterialsProcessed.Length; i++)
+            {
+                bool devidedHyphen = false;
+                if (inputMaterialsProcessed[i].Contains("-"))
+                    inputMaterialsProcessed[i] = inputMaterialsProcessed[i].Replace("-", "@");
+                else if (inputMaterialsProcessed[i].Contains("Y"))
+                {
+                    devidedHyphen = true;
+                    inputMaterialsProcessed[i] = inputMaterialsProcessed[i].Replace("Y", "");
+                }
+
+                string[] lemmas = SearchInDictionary(inputMaterialsProcessed[i])
+                    .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string lemmaEntry in lemmas)
+                {
+                    string[] list = lemmaEntry.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    // Пропускаем мусорные сокращения (2-ух, 8-ми и т.п.)
+                    if (list.Length >= 6 && list[1] != "х" && list[1] != "ми" && list[1] != "ти" && list[1] != "ух")
+                    {
+                        if (list[1].Contains("@"))
+                            list[1] = list[1].Replace("@", "-");
+
+                        string spec = devidedHyphen ? "Y" : "0000";
+                        Word w = new Word(list[0], i, list[1], list[2], list[3], list[4], list[5], list[6], spec);
+                        words.Add(w);
+
+                        // ---- СБОР СТАТИСТИКИ ----
+                        // Берём первый вариант (как в оригинале)
+                        string key = string.Format("{0}|{1}|{2}", w.wordId, w.wordText, w.partOfSpeech);
+                        if (statistics.ContainsKey(key))
+                            statistics[key]++;
+                        else
+                            statistics[key] = 1;
+
+                        totalWordsProcessed++;
+                        if (totalWordsProcessed % 1000 == 0)
+                            Console.WriteLine(string.Format("Обработано {0} слов, уникальных лемм: {1}", totalWordsProcessed, statistics.Count));
+                        // -------------------------
+                        break; // Берём только первый вариант (как в оригинале, чтобы избежать дублей)
+                    }
+                    else
+                    {
+                        // Несловарное слово – пропускаем
+                        break;
+                    }
+                }
+            }
+            words.Clear();
+        }
+
+        // Сохраняем статистику
+        SaveStatistics("statistics.txt");
+        Console.WriteLine(string.Format("Готово. Всего обработано слов: {0}, уникальных лемм: {1}", totalWordsProcessed, statistics.Count));
+        Console.WriteLine("Статистика сохранена в statistics.txt");
+        Console.ReadLine();
+    }
+
+    // ---------- ОРИГИНАЛЬНЫЕ МЕТОДЫ (С НЕБОЛЬШИМИ ПРАВКАМИ) ----------
+    static string[] ProcessHyphen(string[] words)
+    {
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i].Contains("-"))
+            {
+                if (SearchInDictionary("&" + words[i]) == "0")
+                {
+                    string[] inputMaterialsHyphen = words[i].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    words[i] = "Y" + inputMaterialsHyphen[0];
+                    string[] newInputMaterials = { };
+                    for (int j = 1; j < inputMaterialsHyphen.Length; j++)
+                    {
+                        newInputMaterials = InsertElementAfterIndex(words, "Y" + inputMaterialsHyphen[j], i + j - 1);
+                        words = newInputMaterials;
+                    }
+                    return newInputMaterials;
+                }
+            }
+        }
+        return words;
+    }
+
+    static T[] InsertElementAfterIndex<T>(T[] originalArray, T newElement, int insertIndex)
+    {
+        T[] newArray = new T[originalArray.Length + 1];
+        Array.Copy(originalArray, 0, newArray, 0, insertIndex + 1);
+        newArray[insertIndex + 1] = newElement;
+        if (insertIndex + 1 < originalArray.Length)
+            Array.Copy(originalArray, insertIndex + 1, newArray, insertIndex + 2, originalArray.Length - (insertIndex + 1));
+        return newArray;
+    }
+
+    static string[] ProcessFile(string filePath)
+    {
+        var lines = File.ReadAllLines(filePath);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            int index = lines[i].IndexOf('\\');
+            if (index >= 0) lines[i] = lines[i].Substring(0, index);
+            index = lines[i].IndexOf('/');
+            if (index >= 0) lines[i] = lines[i].Substring(0, index);
+        }
+        return lines;
+    }
+
+    static string SearchInDictionary(string word)
+    {
+        bool wordCheck = false;
+        if (word.Contains("&"))
+        {
+            wordCheck = true;
+            word = word.Substring(1);
+        }
+
+        // Определяем номер словаря по первой букве
+        string[] dictionaryNumbers = { "", "ёеаб", "бв", "вг", "гдежз", "зи", "ийкл", "лмн", "но", "о", "оп", "п", "пр", "рс", "с", "сту", "уфх", "хцчшщэюя" };
+        string dictionaryNumber = "";
+        for (int i = 0; i < dictionaryNumbers.Length; i++)
+        {
+            if (dictionaryNumbers[i].Contains(word[0].ToString()))
+            {
+                dictionaryNumber += "-";
+                dictionaryNumber += i;
+            }
+        }
+
+        if (word.Contains("-") || word.Contains("@"))
+            dictionaryNumber += "-17";
+        if (word.Contains("е") || word.Contains("ё"))
+        {
+            dictionaryNumber += "-E";
+            word = word.Replace("ё", "е");
+        }
+
+        string[] foundDictionaries = dictionaryNumber.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+        string lemmas = "";
+
+        for (int i = 0; i < foundDictionaries.Length; i++)
+        {
+            string filePath = "lemmas" + foundDictionaries[i] + ".txt";
+            if (!File.Exists(filePath)) continue;
+            if (word.Contains("@")) word = word.Replace("@", "-");
+
+            // Загружаем словарь в кэш, если ещё не загружен
+            if (!cacheLoadedForFile.Contains(filePath))
+                LoadDictionaryToCache(filePath);
+
+            // Ищем словоформу в кэше
+            if (cache.ContainsKey(word))
+            {
+                List<LemmaInfo> infos = cache[word];
+                if (wordCheck)
+                    return "1";
+
+                foreach (LemmaInfo info in infos)
+                {
+                    // Формируем строку как в оригинале: id-лемма-словоформа-частьРечи-падеж-одуш-род-число
+                    lemmas += string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}-{7} ",
+                        info.LemmaId, info.LemmaText, word, info.PosTag,
+                        info.Case, info.Anim, info.Gender, info.Number);
+                }
+            }
+            else if (word.Contains("-") && wordCheck)
+                return "0";
+        }
+
+        return string.IsNullOrEmpty(lemmas) ? "не найдено" : lemmas.Trim();
+    }
+
+    static HashSet<string> cacheLoadedForFile = new HashSet<string>();
+
+    static void LoadDictionaryToCache(string filePath)
+    {
+        if (cacheLoadedForFile.Contains(filePath)) return;
+        cacheLoadedForFile.Add(filePath);
+        Console.WriteLine(string.Format("Загружаем словарь {0}...", filePath));
+
+        string[] lines = File.ReadAllLines(filePath);
+        foreach (string line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            // Извлекаем ID леммы
+            Match idMatch = Regex.Match(line, @"<lemma id=""(\d+)""");
+            if (!idMatch.Success) continue;
+            int lemmaId = int.Parse(idMatch.Groups[1].Value);
+
+            // Извлекаем текст леммы
+            Match lemmaMatch = Regex.Match(line, @"<l t=""([^""]+)""");
+            if (!lemmaMatch.Success) continue;
+            string lemmaText = lemmaMatch.Groups[1].Value;
+
+            // Часть речи и общие теги
+            string posTag = "0000";
+            string anim = "0000";
+            string gender = "0000";
+            MatchCollection lemmaTags = Regex.Matches(line, @"<g v=""([^""]+)""");
+            foreach (Match tag in lemmaTags)
+            {
+                string val = tag.Groups[1].Value;
+                if (val == "NOUN" || val == "ADJF" || val == "VERB" || val == "PREP" || val == "PRTF" ||
+                    val == "NUMR" || val == "CONJ" || val == "PRCL" || val == "COMP" || val == "GRND" ||
+                    val == "INFN" || val == "PRTS" || val == "ADVB" || val == "ADJS" || val == "NPRO" ||
+                    val == "PRED" || val == "INTJ")
+                    posTag = val;
+                else if (val == "anim") anim = "anim";
+                else if (val == "inan") anim = "inan";
+                else if (val == "masc" || val == "femn" || val == "neut") gender = val;
+            }
+
+            // Извлекаем все словоформы
+            MatchCollection formMatches = Regex.Matches(line, @"<f t=""([^""]+)""[^>]*>(.*?)</f>");
+            foreach (Match formMatch in formMatches)
+            {
+                string wordForm = formMatch.Groups[1].Value.ToLower().Replace('ё', 'е');
+                string wordCase = "0000";
+                string number = "0000";
+                string formGender = gender;
+
+                MatchCollection formTags = Regex.Matches(formMatch.Groups[2].Value, @"<g v=""([^""]+)""");
+                foreach (Match tag in formTags)
+                {
+                    string val = tag.Groups[1].Value;
+                    if (val == "nomn" || val == "gent" || val == "datv" || val == "accs" || val == "ablt" || val == "loct" || val == "voct")
+                        wordCase = val;
+                    else if (val == "sing" || val == "plur")
+                        number = val;
+                    else if (val == "masc" || val == "femn" || val == "neut")
+                        formGender = val;
+                }
+
+                if (posTag == "VERB")
+                {
+                    wordCase = "0000";
+                    anim = "0000";
+                }
+
+                LemmaInfo info = new LemmaInfo
+                {
+                    LemmaId = lemmaId,
+                    LemmaText = lemmaText,
+                    PosTag = posTag,
+                    Case = wordCase,
+                    Anim = anim,
+                    Gender = formGender,
+                    Number = number
+                };
+
+                if (!cache.ContainsKey(wordForm))
+                    cache[wordForm] = new List<LemmaInfo>();
+                cache[wordForm].Add(info);
+            }
+        }
+        Console.WriteLine(string.Format("Словарь {0} загружен. Всего словоформ в кэше: {1}", filePath, cache.Count));
+    }
+
+    static void SaveStatistics(string filePath)
+    {
+        // Сортируем по числовому ID леммы
+        var sorted = statistics.OrderBy(kvp => int.Parse(kvp.Key.Split('|')[0]));
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var kvp in sorted)
+                sw.WriteLine(kvp.Key + "|" + kvp.Value);
+        }
+    }
+}
+
+class LemmaInfo
+{
+    public int LemmaId;
+    public string LemmaText;
+    public string PosTag;
+    public string Case;
+    public string Anim;
+    public string Gender;
+    public string Number;
+}
+
+class Word
+{
+    public string wordId;
+    public int wordOrder;
+    public string wordText;
+    public string partOfSpeech;
+    public string wordCase;
+    public string animation;
+    public string wordKind;
+    public string singPlur;
+    public string specMarks;
+
+    public Word(string WordId, int WordOrder, string WordText, string PartOfSpeech,
+                string WordCase, string Animation, string WordKind, string SingPlur, string SpecMarks)
+    {
+        wordId = WordId;
+        wordOrder = WordOrder;
+        wordText = WordText;
+        partOfSpeech = PartOfSpeech;
+        wordKind = WordKind;
+        singPlur = SingPlur;
+        wordCase = WordCase;
+        animation = Animation;
+        specMarks = SpecMarks;
+    }
+}
