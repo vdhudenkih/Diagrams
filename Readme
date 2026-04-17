@@ -32,3 +32,44 @@ class Program
         }
     }
 }
+
+
+
+
+using System;
+using System.IO;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Определяем имена входного и выходного файлов
+        string inputFile  = args.Length > 0 ? args[0] : "input.txt";
+        string outputFile = args.Length > 1 ? args[1] : "output.txt";
+
+        if (!File.Exists(inputFile))
+        {
+            Console.WriteLine("Ошибка: входной файл не найден: " + inputFile);
+            return;
+        }
+
+        string[] lines = File.ReadAllLines(inputFile);
+        using (StreamWriter writer = new StreamWriter(outputFile))
+        {
+            foreach (string line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                string[] parts = line.Split('|');
+                if (parts.Length >= 3)
+                {
+                    string name = parts[2];
+                    writer.WriteLine(name);
+                }
+            }
+        }
+
+        Console.WriteLine("Готово! Результат записан в: " + outputFile);
+    }
+}
