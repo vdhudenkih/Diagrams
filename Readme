@@ -736,3 +736,324 @@ class Word
         specMarks = SpecMarks;
     }
 }
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+class Lemmatizer
+{
+    // Словарь: словоформа -> список информации о формах (лемма, ID, часть речи и т.д.)
+    private static Dictionary<string, List<FormInfo>> formsDictionary = new Dictionary<string, List<FormInfo>>();
+    // Статистика: ключ "id|лемма|часть речи" -> частота
+    private static Dictionary<string, int> statistics = new Dictionary<string, int>();
+
+    static void Main()
+    {
+        // Загружаем все словари в память
+        LoadAllDictionaries();
+
+        string[] lines = ProcessFile("input.txt");
+
+        foreach (string line in lines)
+        {
+            string processedLine = PreprocessLine(line);
+            string[] tokens = processedLine.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            tokens = ProcessHyphen(tokens); // обработка дефисов
+
+            List<Word> words = new List<Word>();
+
+            foreach (string token in tokens)
+            {
+                string searchWord = token.Contains("-") ? token.Replace("-", "@") : token;
+                string lemmasResult = SearchInDictionary(searchWord);
+                string[] lemmaEntries = lemmasResult.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string entry in lemmaEntries)
+                {
+                    string[] parts = entry.Split('-');
+                    if (parts.Length >= 8)
+                    {
+                        string wordId = parts[0];
+                        string lemma = parts[1];
+                        string wordText = parts[2].Replace("@", "-");
+                        string posTag = parts[3];
+                        string wordCase = parts[4];
+                        string animation = parts[5];
+                        string wordKind = parts[6];
+                        string number = parts[7];
+                        string specMarks = token.Contains("-") ? "Y" : "0000";
+
+                        words.Add(new Word(wordId, lemma, wordText, posTag, wordCase, animation, wordKind, number, specMarks));
+                    }
+                    else
+                    {
+                        // Не найденное в словаре слово – не добавляем в статистику
+                        // Можно добавить с ID "999999", но для статистики они не нужны
+                    }
+                }
+            }
+
+            // Собираем статистику по словам текущей строки
+            foreach (Word w in words)
+            {
+                if (!w.wordId.StartsWith("999999"))
+                {
+                    string key = $"{w.wordId}|{w.lemma}|{w.partOfSpeech}";
+                    if (statistics.ContainsKey(key))
+                        statistics[key]++;
+                    else
+                        statistics[key] = 1;
+                }
+            }
+        }
+
+        // Сохраняем статистику в файл
+        SaveStatistics("statistics.txt");
+        Console.WriteLine("Статистика сохранена в statistics.txt");
+    }
+
+    /// <summary>Предварительная обработка строки: удаление лишних символов, приведение к нижнему регистру</summary>
+    static string PreprocessLine(string input)
+    {
+        input = input.ToLower();
+        input = input.Replace(".", ". ");
+        input = input.Replace(" - ", " ");
+        input = input.Replace("(", " ");
+        input = input.Replace(")", " ");
+        input = input.Replace("|", "");
+        return input;
+    }
+
+    /// <summary>Обработка дефисных слов (разделение на части)</summary>
+    static string[] ProcessHyphen(string[] words)
+    {
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i].Contains("-"))
+            {
+                // Проверяем, есть ли слово с дефисом в словаре
+                if (SearchInDictionary("&" + words[i]) == "0")
+                {
+                    string[] parts = words[i].Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    words[i] = "Y" + parts[0];
+                    for (int j = 1; j < parts.Length; j++)
+                    {
+                        words = InsertElementAfterIndex(words, "Y" + parts[j], i + j - 1);
+                    }
+                    return words;
+                }
+            }
+        }
+        return words;
+    }
+
+    static T[] InsertElementAfterIndex<T>(T[] array, T newElement, int index)
+    {
+        T[] newArray = new T[array.Length + 1];
+        Array.Copy(array, 0, newArray, 0, index + 1);
+        newArray[index + 1] = newElement;
+        Array.Copy(array, index + 1, newArray, index + 2, array.Length - index - 1);
+        return newArray;
+    }
+
+    /// <summary>Загрузка всех файлов словаря в память</summary>
+    static void LoadAllDictionaries()
+    {
+        // Ищем все файлы lemmas*.txt в текущей директории
+        string[] dictFiles = Directory.GetFiles(".", "lemmas*.txt");
+        foreach (string file in dictFiles)
+        {
+            LoadDictionaryFile(file);
+        }
+        Console.WriteLine($"Загружено {formsDictionary.Count} уникальных словоформ.");
+    }
+
+    /// <summary>Загрузка одного файла словаря</summary>
+    static void LoadDictionaryFile(string filePath)
+    {
+        string[] lines = File.ReadAllLines(filePath);
+        foreach (string line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            // Извлекаем ID леммы
+            Match idMatch = Regex.Match(line, @"<lemma id=""(\d+)""");
+            if (!idMatch.Success) continue;
+            int lemmaId = int.Parse(idMatch.Groups[1].Value);
+
+            // Извлекаем текст леммы (нормальную форму)
+            Match lemmaMatch = Regex.Match(line, @"<l t=""([^""]+)""");
+            if (!lemmaMatch.Success) continue;
+            string lemmaText = lemmaMatch.Groups[1].Value;
+
+            // Извлекаем часть речи и другие общие теги леммы
+            string posTag = "0000";
+            string anim = "0000";
+            string gender = "0000";
+            MatchCollection lemmaTags = Regex.Matches(line, @"<g v=""([^""]+)""");
+            foreach (Match tag in lemmaTags)
+            {
+                string val = tag.Groups[1].Value;
+                if (val == "NOUN" || val == "ADJF" || val == "VERB" || val == "PREP" || val == "PRTF" || val == "NUMR" ||
+                    val == "CONJ" || val == "PRCL" || val == "COMP" || val == "GRND" || val == "INFN" || val == "PRTS" ||
+                    val == "ADVB" || val == "ADJS" || val == "NPRO" || val == "PRED" || val == "INTJ")
+                    posTag = val;
+                else if (val == "anim") anim = "anim";
+                else if (val == "inan") anim = "inan";
+                else if (val == "masc" || val == "femn" || val == "neut") gender = val;
+            }
+
+            // Извлекаем все словоформы (<f t="...">)
+            MatchCollection formMatches = Regex.Matches(line, @"<f t=""([^""]+)""[^>]*>(.*?)</f>");
+            foreach (Match formMatch in formMatches)
+            {
+                string wordForm = formMatch.Groups[1].Value.ToLower();
+                // Нормализуем ё -> е
+                wordForm = wordForm.Replace('ё', 'е');
+
+                // Теги, специфичные для формы (падеж, число и т.д.)
+                string wordCase = "0000";
+                string number = "0000";
+                string formGender = gender; // по умолчанию наследуется от леммы
+
+                MatchCollection formTags = Regex.Matches(formMatch.Groups[2].Value, @"<g v=""([^""]+)""");
+                foreach (Match tag in formTags)
+                {
+                    string val = tag.Groups[1].Value;
+                    if (val == "nomn" || val == "gent" || val == "datv" || val == "accs" || val == "ablt" || val == "loct" || val == "voct")
+                        wordCase = val;
+                    else if (val == "sing" || val == "plur")
+                        number = val;
+                    else if (val == "masc" || val == "femn" || val == "neut")
+                        formGender = val;
+                }
+
+                // Для глаголов падеж и одушевлённость не используются
+                if (posTag == "VERB")
+                {
+                    wordCase = "0000";
+                    anim = "0000";
+                }
+
+                FormInfo info = new FormInfo
+                {
+                    LemmaId = lemmaId,
+                    LemmaText = lemmaText,
+                    PosTag = posTag,
+                    Case = wordCase,
+                    Anim = anim,
+                    Gender = formGender,
+                    Number = number
+                };
+
+                if (!formsDictionary.ContainsKey(wordForm))
+                    formsDictionary[wordForm] = new List<FormInfo>();
+                formsDictionary[wordForm].Add(info);
+            }
+        }
+    }
+
+    /// <summary>Поиск словоформы в загруженных словарях</summary>
+    static string SearchInDictionary(string word)
+    {
+        bool checkOnly = false;
+        if (word.StartsWith("&"))
+        {
+            checkOnly = true;
+            word = word.Substring(1);
+        }
+
+        // Нормализация
+        word = word.ToLower().Replace('ё', 'е');
+        if (word.Contains("@"))
+            word = word.Replace("@", "-");
+
+        if (formsDictionary.TryGetValue(word, out List<FormInfo> infos))
+        {
+            if (checkOnly)
+                return "1"; // слово существует
+
+            StringBuilder result = new StringBuilder();
+            foreach (FormInfo info in infos)
+            {
+                // Формат: id-лемма-словоформа-частьРечи-падеж-одуш-род-число
+                result.Append($"{info.LemmaId}-{info.LemmaText}-{word}-{info.PosTag}-{info.Case}-{info.Anim}-{info.Gender}-{info.Number} ");
+            }
+            return result.ToString().Trim();
+        }
+
+        return checkOnly ? "0" : "не найдено";
+    }
+
+    /// <summary>Сохранение статистики в файл</summary>
+    static void SaveStatistics(string filePath)
+    {
+        // Сортируем по ID леммы (числовому)
+        var sorted = statistics.OrderBy(kvp => int.Parse(kvp.Key.Split('|')[0]));
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var kvp in sorted)
+            {
+                sw.WriteLine(kvp.Key + "|" + kvp.Value);
+            }
+        }
+    }
+
+    /// <summary>Чтение входного файла, удаление комментариев после \ или /</summary>
+    static string[] ProcessFile(string filePath)
+    {
+        var lines = File.ReadAllLines(filePath);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            int index = lines[i].IndexOfAny(new char[] { '\\', '/' });
+            if (index >= 0)
+                lines[i] = lines[i].Substring(0, index);
+        }
+        return lines;
+    }
+}
+
+/// <summary>Информация о словоформе, извлечённая из словаря</summary>
+class FormInfo
+{
+    public int LemmaId;
+    public string LemmaText;
+    public string PosTag;
+    public string Case;
+    public string Anim;
+    public string Gender;
+    public string Number;
+}
+
+/// <summary>Класс для хранения данных об одном слове в тексте</summary>
+class Word
+{
+    public string wordId;
+    public string lemma;
+    public string wordText;
+    public string partOfSpeech;
+    public string wordCase;
+    public string animation;
+    public string wordKind;
+    public string singPlur;
+    public string specMarks;
+
+    public Word(string id, string lem, string text, string pos, string wCase, string anim, string kind, string number, string marks)
+    {
+        wordId = id;
+        lemma = lem;
+        wordText = text;
+        partOfSpeech = pos;
+        wordCase = wCase;
+        animation = anim;
+        wordKind = kind;
+        singPlur = number;
+        specMarks = marks;
+    }
+}
