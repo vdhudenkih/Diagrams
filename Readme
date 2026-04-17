@@ -363,3 +363,377 @@ namespace LemmaStatistics
         public int Count { get; set; }
     }
 }
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Xml;
+
+namespace LemmaStatistics
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            try
+            {
+                if (args.Length < 3)
+                {
+                    Console.WriteLine("Использование:");
+                    Console.WriteLine("LemmaStatistics.exe input.txt lemmas.txt output.txt");
+                    return 1;
+                }
+
+                string inputFile = args[0];
+                string lemmasFile = args[1];
+                string outputFile = args[2];
+
+                if (!File.Exists(inputFile))
+                {
+                    Console.WriteLine("Не найден входной файл: " + inputFile);
+                    return 2;
+                }
+
+                if (!File.Exists(lemmasFile))
+                {
+                    Console.WriteLine("Не найден файл словаря: " + lemmasFile);
+                    return 3;
+                }
+
+                Dictionary<string, int> inputWordCounts = ReadInputWordCounts(inputFile);
+
+                if (inputWordCounts.Count == 0)
+                {
+                    File.WriteAllText(outputFile, string.Empty, Encoding.UTF8);
+                    Console.WriteLine("Во входном файле не найдено слов.");
+                    return 0;
+                }
+
+                Dictionary<string, List<LemmaInfo>> resolvedWords = ResolveWordsByLemmasXml(lemmasFile, inputWordCounts);
+
+                Dictionary<string, LemmaStat> lemmaStats = BuildLemmaStatistics(inputWordCounts, resolvedWords);
+
+                WriteOutput(outputFile, lemmaStats);
+
+                Console.WriteLine("Готово. Записано в: " + outputFile);
+                Console.WriteLine("Уникальных слов во входе: " + inputWordCounts.Count);
+                Console.WriteLine("Слов, найденных в словаре: " + resolvedWords.Count);
+                Console.WriteLine("Уникальных лемм в результате: " + lemmaStats.Count);
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка: " + ex.Message);
+                return 100;
+            }
+        }
+
+        static Dictionary<string, int> ReadInputWordCounts(string inputFile)
+        {
+            var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            using (var reader = new StreamReader(inputFile, Encoding.UTF8, true))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    foreach (string token in ExtractWords(line))
+                    {
+                        string normalized = NormalizeWord(token);
+                        if (normalized.Length == 0)
+                            continue;
+
+                        int count;
+                        if (result.TryGetValue(normalized, out count))
+                            result[normalized] = count + 1;
+                        else
+                            result[normalized] = 1;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Теперь для каждого слова сохраняем список всех подходящих лемм.
+        /// </summary>
+        static Dictionary<string, List<LemmaInfo>> ResolveWordsByLemmasXml(
+            string lemmasFile,
+            Dictionary<string, int> targetWords)
+        {
+            var resolved = new Dictionary<string, List<LemmaInfo>>(StringComparer.OrdinalIgnoreCase);
+
+            var settings = new XmlReaderSettings
+            {
+                IgnoreComments = true,
+                IgnoreWhitespace = true,
+                DtdProcessing = DtdProcessing.Ignore
+            };
+
+            using (var stream = File.OpenRead(lemmasFile))
+            using (var reader = XmlReader.Create(stream, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "lemma")
+                    {
+                        ParseLemma(reader, targetWords, resolved);
+                    }
+                }
+            }
+
+            return resolved;
+        }
+
+        static void ParseLemma(
+            XmlReader reader,
+            Dictionary<string, int> targetWords,
+            Dictionary<string, List<LemmaInfo>> resolved)
+        {
+            string lemmaIdText = reader.GetAttribute("id");
+            int lemmaId;
+            if (!int.TryParse(lemmaIdText, NumberStyles.Integer, CultureInfo.InvariantCulture, out lemmaId))
+                lemmaId = -1;
+
+            string lemmaText = null;
+            string partOfSpeech = null;
+
+            // Список слов из input.txt, которые совпали с текущей леммой
+            var matchedWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (reader.IsEmptyElement)
+                return;
+
+            int lemmaDepth = reader.Depth;
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.EndElement &&
+                    reader.Name == "lemma" &&
+                    reader.Depth == lemmaDepth)
+                {
+                    break;
+                }
+
+                if (reader.NodeType != XmlNodeType.Element)
+                    continue;
+
+                if (reader.Name == "l")
+                {
+                    string t = reader.GetAttribute("t");
+                    if (!string.IsNullOrEmpty(t))
+                    {
+                        lemmaText = NormalizeWord(t);
+
+                        if (targetWords.ContainsKey(lemmaText))
+                            matchedWords.Add(lemmaText);
+                    }
+
+                    if (!reader.IsEmptyElement)
+                    {
+                        int lDepth = reader.Depth;
+
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.EndElement &&
+                                reader.Name == "l" &&
+                                reader.Depth == lDepth)
+                            {
+                                break;
+                            }
+
+                            if (reader.NodeType == XmlNodeType.Element &&
+                                reader.Name == "g" &&
+                                partOfSpeech == null)
+                            {
+                                string v = reader.GetAttribute("v");
+                                if (!string.IsNullOrEmpty(v))
+                                    partOfSpeech = v;
+                            }
+                        }
+                    }
+                }
+                else if (reader.Name == "f")
+                {
+                    string t = reader.GetAttribute("t");
+                    if (!string.IsNullOrEmpty(t))
+                    {
+                        string form = NormalizeWord(t);
+                        if (targetWords.ContainsKey(form))
+                            matchedWords.Add(form);
+                    }
+                }
+            }
+
+            if (matchedWords.Count == 0)
+                return;
+
+            if (string.IsNullOrEmpty(lemmaText))
+                return;
+
+            if (string.IsNullOrEmpty(partOfSpeech))
+                partOfSpeech = "?";
+
+            var info = new LemmaInfo
+            {
+                Id = lemmaId,
+                Lemma = lemmaText,
+                PartOfSpeech = partOfSpeech
+            };
+
+            foreach (string word in matchedWords)
+            {
+                List<LemmaInfo> list;
+                if (!resolved.TryGetValue(word, out list))
+                {
+                    list = new List<LemmaInfo>();
+                    resolved[word] = list;
+                }
+
+                // Чтобы одна и та же лемма не добавилась дважды для одного слова
+                bool exists = false;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (list[i].Id == info.Id)
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists)
+                    list.Add(info);
+            }
+        }
+
+        /// <summary>
+        /// Одно слово может увеличить счётчик нескольких лемм.
+        /// </summary>
+        static Dictionary<string, LemmaStat> BuildLemmaStatistics(
+            Dictionary<string, int> inputWordCounts,
+            Dictionary<string, List<LemmaInfo>> resolvedWords)
+        {
+            var result = new Dictionary<string, LemmaStat>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var pair in inputWordCounts)
+            {
+                string word = pair.Key;
+                int wordCount = pair.Value;
+
+                List<LemmaInfo> lemmas;
+                if (!resolvedWords.TryGetValue(word, out lemmas))
+                    continue;
+
+                for (int i = 0; i < lemmas.Count; i++)
+                {
+                    LemmaInfo lemmaInfo = lemmas[i];
+
+                    string key = lemmaInfo.Id.ToString(CultureInfo.InvariantCulture) + "|" +
+                                 lemmaInfo.Lemma + "|" +
+                                 lemmaInfo.PartOfSpeech;
+
+                    LemmaStat stat;
+                    if (!result.TryGetValue(key, out stat))
+                    {
+                        stat = new LemmaStat
+                        {
+                            Id = lemmaInfo.Id,
+                            Lemma = lemmaInfo.Lemma,
+                            PartOfSpeech = lemmaInfo.PartOfSpeech,
+                            Count = 0
+                        };
+                        result[key] = stat;
+                    }
+
+                    stat.Count += wordCount;
+                }
+            }
+
+            return result;
+        }
+
+        static void WriteOutput(string outputFile, Dictionary<string, LemmaStat> stats)
+        {
+            using (var writer = new StreamWriter(outputFile, false, Encoding.UTF8))
+            {
+                foreach (var stat in stats.Values
+                    .OrderByDescending(x => x.Count)
+                    .ThenBy(x => x.Lemma, StringComparer.OrdinalIgnoreCase))
+                {
+                    writer.Write(stat.Id);
+                    writer.Write("|");
+                    writer.Write(stat.Lemma);
+                    writer.Write("|");
+                    writer.Write(stat.PartOfSpeech);
+                    writer.Write("|");
+                    writer.WriteLine(stat.Count);
+                }
+            }
+        }
+
+        static IEnumerable<string> ExtractWords(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                yield break;
+
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char ch = line[i];
+
+                if (char.IsLetter(ch) || ch == '-' || ch == 'Ё' || ch == 'ё')
+                {
+                    sb.Append(ch);
+                }
+                else
+                {
+                    if (sb.Length > 0)
+                    {
+                        yield return sb.ToString();
+                        sb.Clear();
+                    }
+                }
+            }
+
+            if (sb.Length > 0)
+                yield return sb.ToString();
+        }
+
+        static string NormalizeWord(string word)
+        {
+            if (string.IsNullOrEmpty(word))
+                return string.Empty;
+
+            return word.Trim().ToLowerInvariant().Replace('ё', 'е');
+        }
+    }
+
+    class LemmaInfo
+    {
+        public int Id { get; set; }
+        public string Lemma { get; set; }
+        public string PartOfSpeech { get; set; }
+    }
+
+    class LemmaStat
+    {
+        public int Id { get; set; }
+        public string Lemma { get; set; }
+        public string PartOfSpeech { get; set; }
+        public int Count { get; set; }
+    }
+}
+
