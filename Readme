@@ -1,1 +1,405 @@
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Xml;
+
+namespace PosLineConstructionStatistics
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            try
+            {
+                if (args.Length < 3)
+                {
+                    Console.WriteLine("Использование:");
+                    Console.WriteLine("PosLineConstructionStatistics.exe input.txt lemmas.txt output.txt");
+                    Pause();
+                    return 1;
+                }
+
+                string inputFile = args[0];
+                string lemmasFile = args[1];
+                string outputFile = args[2];
+
+                Console.WriteLine("Входной файл: " + inputFile);
+                Console.WriteLine("Файл словаря: " + lemmasFile);
+                Console.WriteLine("Выходной файл: " + outputFile);
+
+                if (!File.Exists(inputFile))
+                {
+                    Console.WriteLine("Не найден входной файл: " + inputFile);
+                    Pause();
+                    return 2;
+                }
+
+                if (!File.Exists(lemmasFile))
+                {
+                    Console.WriteLine("Не найден файл словаря: " + lemmasFile);
+                    Pause();
+                    return 3;
+                }
+
+                HashSet<string> targetWords = ReadUniqueWords(inputFile);
+
+                Console.WriteLine("Уникальных слов во входе: " + targetWords.Count);
+
+                if (targetWords.Count == 0)
+                {
+                    File.WriteAllText(outputFile, string.Empty, Encoding.UTF8);
+                    Console.WriteLine("Во входном файле не найдено допустимых слов.");
+                    Pause();
+                    return 0;
+                }
+
+                Dictionary<string, HashSet<string>> wordToPos = ResolveWordPartsOfSpeech(lemmasFile, targetWords);
+                Console.WriteLine("Слов, найденных в словаре: " + wordToPos.Count);
+
+                Dictionary<string, int> constructionStats = BuildLineConstructionStatistics(inputFile, wordToPos);
+                Console.WriteLine("Уникальных конструкций: " + constructionStats.Count);
+
+                WriteOutput(outputFile, constructionStats);
+
+                Console.WriteLine("Готово. Записано в: " + outputFile);
+                Pause();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка: " + ex.ToString());
+                Pause();
+                return 100;
+            }
+        }
+
+        static void Pause()
+        {
+            Console.WriteLine("Нажмите Enter для выхода...");
+            Console.ReadLine();
+        }
+
+        static HashSet<string> ReadUniqueWords(string inputFile)
+        {
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            using (var reader = new StreamReader(inputFile, Encoding.UTF8, true))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = CutAfterSlash(line);
+
+                    foreach (string token in ExtractWords(line))
+                    {
+                        if (IsValidWord(token))
+                        {
+                            string normalized = NormalizeWord(token);
+                            if (normalized.Length > 0)
+                                result.Add(normalized);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        static Dictionary<string, HashSet<string>> ResolveWordPartsOfSpeech(
+            string lemmasFile,
+            HashSet<string> targetWords)
+        {
+            var result = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+            var settings = new XmlReaderSettings
+            {
+                IgnoreComments = true,
+                IgnoreWhitespace = true,
+                DtdProcessing = DtdProcessing.Ignore
+            };
+
+            using (var stream = File.OpenRead(lemmasFile))
+            using (var reader = XmlReader.Create(stream, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "lemma")
+                    {
+                        ParseLemma(reader, targetWords, result);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        static void ParseLemma(
+            XmlReader reader,
+            HashSet<string> targetWords,
+            Dictionary<string, HashSet<string>> result)
+        {
+            string partOfSpeech = null;
+            var matchedWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (reader.IsEmptyElement)
+                return;
+
+            int lemmaDepth = reader.Depth;
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.EndElement &&
+                    reader.Name == "lemma" &&
+                    reader.Depth == lemmaDepth)
+                {
+                    break;
+                }
+
+                if (reader.NodeType != XmlNodeType.Element)
+                    continue;
+
+                if (reader.Name == "l")
+                {
+                    string t = reader.GetAttribute("t");
+                    if (!string.IsNullOrEmpty(t))
+                    {
+                        string lemmaText = NormalizeWord(t);
+                        if (targetWords.Contains(lemmaText))
+                            matchedWords.Add(lemmaText);
+                    }
+
+                    if (!reader.IsEmptyElement)
+                    {
+                        int lDepth = reader.Depth;
+
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.EndElement &&
+                                reader.Name == "l" &&
+                                reader.Depth == lDepth)
+                            {
+                                break;
+                            }
+
+                            if (reader.NodeType == XmlNodeType.Element &&
+                                reader.Name == "g" &&
+                                partOfSpeech == null)
+                            {
+                                string v = reader.GetAttribute("v");
+                                if (!string.IsNullOrEmpty(v))
+                                    partOfSpeech = v;
+                            }
+                        }
+                    }
+                }
+                else if (reader.Name == "f")
+                {
+                    string t = reader.GetAttribute("t");
+                    if (!string.IsNullOrEmpty(t))
+                    {
+                        string form = NormalizeWord(t);
+                        if (targetWords.Contains(form))
+                            matchedWords.Add(form);
+                    }
+                }
+            }
+
+            if (matchedWords.Count == 0)
+                return;
+
+            if (string.IsNullOrEmpty(partOfSpeech))
+                partOfSpeech = "?";
+
+            foreach (string word in matchedWords)
+            {
+                HashSet<string> posSet;
+                if (!result.TryGetValue(word, out posSet))
+                {
+                    posSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    result[word] = posSet;
+                }
+
+                posSet.Add(partOfSpeech);
+            }
+        }
+
+        static Dictionary<string, int> BuildLineConstructionStatistics(
+            string inputFile,
+            Dictionary<string, HashSet<string>> wordToPos)
+        {
+            var stats = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            using (var reader = new StreamReader(inputFile, Encoding.UTF8, true))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = CutAfterSlash(line);
+
+                    List<string> words = new List<string>();
+
+                    foreach (string token in ExtractWords(line))
+                    {
+                        if (IsValidWord(token))
+                        {
+                            string normalized = NormalizeWord(token);
+                            if (normalized.Length > 0)
+                                words.Add(normalized);
+                        }
+                    }
+
+                    if (words.Count == 0)
+                        continue;
+
+                    var posLists = new List<List<string>>();
+                    bool skipLine = false;
+
+                    for (int i = 0; i < words.Count; i++)
+                    {
+                        HashSet<string> posSet;
+                        if (!wordToPos.TryGetValue(words[i], out posSet) || posSet.Count == 0)
+                        {
+                            skipLine = true;
+                            break;
+                        }
+
+                        posLists.Add(posSet.ToList());
+                    }
+
+                    if (skipLine)
+                        continue;
+
+                    AddAllLineConstructions(posLists, 0, new List<string>(), stats);
+                }
+            }
+
+            return stats;
+        }
+
+        static void AddAllLineConstructions(
+            List<List<string>> posLists,
+            int index,
+            List<string> current,
+            Dictionary<string, int> stats)
+        {
+            if (index >= posLists.Count)
+            {
+                string construction = string.Join(" ", current);
+
+                int count;
+                if (stats.TryGetValue(construction, out count))
+                    stats[construction] = count + 1;
+                else
+                    stats[construction] = 1;
+
+                return;
+            }
+
+            List<string> currentPosList = posLists[index];
+
+            for (int i = 0; i < currentPosList.Count; i++)
+            {
+                current.Add(currentPosList[i]);
+                AddAllLineConstructions(posLists, index + 1, current, stats);
+                current.RemoveAt(current.Count - 1);
+            }
+        }
+
+        static void WriteOutput(string outputFile, Dictionary<string, int> stats)
+        {
+            using (var writer = new StreamWriter(outputFile, false, Encoding.UTF8))
+            {
+                foreach (var pair in stats
+                    .OrderByDescending(x => x.Value)
+                    .ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    writer.Write(pair.Key);
+                    writer.Write("|");
+                    writer.WriteLine(pair.Value);
+                }
+            }
+        }
+
+        static string CutAfterSlash(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                return string.Empty;
+
+            int slashIndex = line.IndexOf('/');
+            int backslashIndex = line.IndexOf('\\');
+
+            int cutIndex = -1;
+
+            if (slashIndex >= 0 && backslashIndex >= 0)
+                cutIndex = Math.Min(slashIndex, backslashIndex);
+            else if (slashIndex >= 0)
+                cutIndex = slashIndex;
+            else if (backslashIndex >= 0)
+                cutIndex = backslashIndex;
+
+            if (cutIndex >= 0)
+                return line.Substring(0, cutIndex);
+
+            return line;
+        }
+
+        static IEnumerable<string> ExtractWords(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                yield break;
+
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char ch = line[i];
+
+                if (char.IsLetter(ch) || ch == 'Ё' || ch == 'ё')
+                {
+                    sb.Append(ch);
+                }
+                else
+                {
+                    if (sb.Length > 0)
+                    {
+                        yield return sb.ToString();
+                        sb.Clear();
+                    }
+                }
+            }
+
+            if (sb.Length > 0)
+                yield return sb.ToString();
+        }
+
+        static bool IsValidWord(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return false;
+
+            token = token.Trim();
+
+            if (token.Length < 2)
+                return false;
+
+            for (int i = 0; i < token.Length; i++)
+            {
+                if (!char.IsLetter(token[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        static string NormalizeWord(string word)
+        {
+            if (string.IsNullOrEmpty(word))
+                return string.Empty;
+
+            return word.Trim().ToLowerInvariant().Replace('ё', 'е');
+        }
+    }
+}
