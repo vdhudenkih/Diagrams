@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="Страница-1" id="JYhmefFVDIGqVNHGQG0b">
-    <mxGraphModel dx="3318" dy="924" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="5189" dy="1963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1124,7 +1124,10 @@
           <mxGeometry height="239" width="436" x="1280" y="6015.5" as="geometry" />
         </mxCell>
         <mxCell id="6m_l57E308v54jfGU7Go-39" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;font face=&quot;Times New Roman&quot;&gt;Переменные нужны:&lt;/font&gt;&lt;div&gt;&lt;font face=&quot;Times New Roman&quot;&gt;1. LV_REQUEST_ID&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Times New Roman&quot;&gt;2. LV_POSITION_ID&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Times New Roman&quot;&gt;3. LV_STATUS&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Times New Roman&quot;&gt;4. LT_VON&lt;/font&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="170" width="267" x="1180" y="5570" as="geometry" />
+          <mxGeometry height="90" width="267" x="1180" y="5650" as="geometry" />
+        </mxCell>
+        <mxCell id="6m_l57E308v54jfGU7Go-40" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Необходимо сделать проверку после удаления каждой записи, вдруг это была последняя запись с отказом, вследствие чего надо убрать автора отказа в основной таблице" vertex="1">
+          <mxGeometry height="170" width="240" x="1180" y="5740" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
