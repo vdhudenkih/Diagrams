@@ -16,3 +16,317 @@ ____ (без особых символов) пример:  БРУСОК АЛМ
 Д/СКВОЗНЫХ|1
 Смотри, в файле строк очень много (свыше 200 тысяч), так что не допусти переполнения, ну и программа должна выполниться достаточно быстро
 
+
+
+
+
+
+Задача уже ближе к “боевой” обработке текста, поэтому дам решение, которое:
+
+* работает **потоково** (без загрузки всего файла)
+* быстро обрабатывает **200k+ строк**
+* использует `lemmas.txt`, чтобы **отсеять нормальные слова**
+* корректно ловит **разные типы сокращений**
+
+---
+
+# 🧠 Логика, что считаем сокращением
+
+Будем считать сокращениями:
+
+### ✅ Подходит
+
+1. `ПОЛИР.АЛМ.` → `ПОЛИР`, `АЛМ`
+2. `НЕКЛ.` → `НЕКЛ`
+3. `Д/СКВОЗНЫХ` → как есть
+4. `АЛМ` (если не найдено в словаре как нормальное слово)
+
+---
+
+### ❌ НЕ подходит
+
+* числа: `125`, `13,8`
+* мусор: `В1-01`
+* нормальные слова из словаря (например `ПЛЕНКА`, `РЕЗЕЦ`, `ОТВЕРСТИЙ`)
+
+---
+
+# ⚙️ Общий алгоритм
+
+1. Собираем **все слова из input.txt**
+2. Через `lemmas.txt` определяем, какие из них **нормальные слова**
+3. При обработке:
+
+   * если слово **не найдено в словаре → кандидат в сокращения**
+4. Парсим сокращения:
+
+   * `.` → разбиваем
+   * `/` → оставляем как есть
+5. Считаем частоты
+
+---
+
+# 💻 Код (C# 5)
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Xml;
+
+namespace AbbreviationFinder
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            try
+            {
+                string inputFile = "input.txt";
+                string lemmasFile = "lemmas.txt";
+                string outputFile = "abbreviations.txt";
+
+                if (!File.Exists(inputFile) || !File.Exists(lemmasFile))
+                {
+                    Console.WriteLine("Нет входных файлов");
+                    Pause();
+                    return 1;
+                }
+
+                // 1. Собираем все слова
+                HashSet<string> allWords = CollectAllWords(inputFile);
+
+                // 2. Находим какие слова есть в словаре (это НЕ сокращения)
+                HashSet<string> knownWords = ResolveKnownWords(lemmasFile, allWords);
+
+                // 3. Считаем сокращения
+                Dictionary<string, int> stats = CountAbbreviations(inputFile, knownWords);
+
+                // 4. Запись
+                WriteOutput(outputFile, stats);
+
+                Console.WriteLine("Готово");
+                Pause();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                Pause();
+                return 100;
+            }
+        }
+
+        static void Pause()
+        {
+            Console.ReadLine();
+        }
+
+        // =========================
+        // Сбор слов
+        // =========================
+        static HashSet<string> CollectAllWords(string file)
+        {
+            var result = new HashSet<string>();
+
+            using (var reader = new StreamReader(file, Encoding.UTF8))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    foreach (string token in line.Split(' '))
+                    {
+                        string w = Normalize(token);
+                        if (w.Length > 1)
+                            result.Add(w);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        // =========================
+        // Чтение словаря (потоково)
+        // =========================
+        static HashSet<string> ResolveKnownWords(string lemmasFile, HashSet<string> targetWords)
+        {
+            var known = new HashSet<string>();
+
+            var settings = new XmlReaderSettings
+            {
+                IgnoreWhitespace = true,
+                IgnoreComments = true
+            };
+
+            using (var reader = XmlReader.Create(lemmasFile, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element &&
+                        (reader.Name == "l" || reader.Name == "f"))
+                    {
+                        string t = reader.GetAttribute("t");
+                        if (string.IsNullOrEmpty(t))
+                            continue;
+
+                        string word = Normalize(t);
+
+                        if (targetWords.Contains(word))
+                            known.Add(word);
+                    }
+                }
+            }
+
+            return known;
+        }
+
+        // =========================
+        // Подсчёт сокращений
+        // =========================
+        static Dictionary<string, int> CountAbbreviations(string file, HashSet<string> knownWords)
+        {
+            var stats = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            using (var reader = new StreamReader(file, Encoding.UTF8))
+            {
+                string line;
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] tokens = line.Split(' ');
+
+                    foreach (string raw in tokens)
+                    {
+                        if (string.IsNullOrWhiteSpace(raw))
+                            continue;
+
+                        // убираем числа
+                        if (ContainsDigit(raw))
+                            continue;
+
+                        // случай Д/СКВОЗНЫХ
+                        if (raw.Contains("/"))
+                        {
+                            string val = raw.Trim();
+                            AddStat(stats, val);
+                            continue;
+                        }
+
+                        // случай с точками
+                        if (raw.Contains("."))
+                        {
+                            string[] parts = raw.Split('.');
+
+                            foreach (string p in parts)
+                            {
+                                string w = Normalize(p);
+
+                                if (w.Length < 2)
+                                    continue;
+
+                                if (!knownWords.Contains(w))
+                                    AddStat(stats, w);
+                            }
+
+                            continue;
+                        }
+
+                        // обычное слово
+                        string word = Normalize(raw);
+
+                        if (word.Length < 2)
+                            continue;
+
+                        if (!knownWords.Contains(word))
+                            AddStat(stats, word);
+                    }
+                }
+            }
+
+            return stats;
+        }
+
+        static void AddStat(Dictionary<string, int> stats, string key)
+        {
+            int val;
+            if (stats.TryGetValue(key, out val))
+                stats[key] = val + 1;
+            else
+                stats[key] = 1;
+        }
+
+        static bool ContainsDigit(string s)
+        {
+            foreach (char c in s)
+                if (char.IsDigit(c))
+                    return true;
+
+            return false;
+        }
+
+        static string Normalize(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return "";
+
+            return s.Trim()
+                    .ToUpperInvariant()
+                    .Replace("Ё", "Е");
+        }
+
+        static void WriteOutput(string file, Dictionary<string, int> stats)
+        {
+            using (var writer = new StreamWriter(file, false, Encoding.UTF8))
+            {
+                foreach (var pair in stats)
+                {
+                    writer.Write(pair.Key);
+                    writer.Write("|");
+                    writer.WriteLine(pair.Value);
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+# ⚡ Производительность
+
+Программа быстрая потому что:
+
+* `lemmas.txt` читается **один раз потоково**
+* `input.txt` читается **2 раза (дёшево)**
+* используется `HashSet` → O(1) поиск
+* нет хранения больших структур
+
+---
+
+# 📌 Что можно улучшить (если понадобится)
+
+Могу докрутить:
+
+1. фильтр только **русских сокращений**
+2. игнор:
+
+   * латиницы
+   * смешанных токенов
+3. нормализацию:
+
+   * `ПОЛИР.` → `ПОЛИР`
+4. сортировку по частоте
+
+---
+
+# 👉 Если хочешь точнее
+
+Можем сделать ещё умнее:
+
+* отличать **настоящие сокращения от редких слов**
+* учитывать морфологию (например "СКВОЗНЫХ" → не сокращение)
+
+Но это уже следующий уровень 🙂
+
