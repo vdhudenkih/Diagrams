@@ -1,3 +1,292 @@
-напиши теперь такую программу: на вход подаётся тхт файл "input_new.txt", программа собирает из него встречаемость всех словоформ по lemmas.txt в формате:
-айди леммы|словоформа(не лемма!)|число встреч в файле
-в конце отсортируй output.txt выходной файл, чтобы в нем было сначало максимальное число встреч, а в конце минимальное
+напиши теперь такую программу: на вход подаётся тхт файл "input_new.txt", программа собирает из него встречаемость всех словоформ по lemmas.
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Xml;
+
+namespace WordFormLemmaStats
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            try
+            {
+                string inputFile = "input_new.txt";
+                string lemmasFile = "lemmas.txt";
+                string outputFile = "output.txt";
+
+                if (!File.Exists(inputFile))
+                {
+                    Console.WriteLine("Не найден файл: " + inputFile);
+                    Pause();
+                    return 1;
+                }
+
+                if (!File.Exists(lemmasFile))
+                {
+                    Console.WriteLine("Не найден файл: " + lemmasFile);
+                    Pause();
+                    return 2;
+                }
+
+                Dictionary<string, int> wordFormCounts = ReadWordFormCounts(inputFile);
+
+                Console.WriteLine("Уникальных словоформ во входе: " + wordFormCounts.Count);
+
+                Dictionary<string, HashSet<int>> wordFormToLemmaIds =
+                    ResolveWordFormsByLemmas(lemmasFile, wordFormCounts);
+
+                Console.WriteLine("Словоформ найдено в словаре: " + wordFormToLemmaIds.Count);
+
+                List<ResultItem> results =
+                    BuildResults(wordFormCounts, wordFormToLemmaIds);
+
+                WriteOutput(outputFile, results);
+
+                Console.WriteLine("Готово. Результат: " + outputFile);
+                Pause();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка:");
+                Console.WriteLine(ex.ToString());
+                Pause();
+                return 100;
+            }
+        }
+
+        static void Pause()
+        {
+            Console.WriteLine("Нажмите Enter для выхода...");
+            Console.ReadLine();
+        }
+
+        static Dictionary<string, int> ReadWordFormCounts(string inputFile)
+        {
+            var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            using (var reader = new StreamReader(inputFile, Encoding.UTF8, true))
+            {
+                string line;
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    foreach (string token in ExtractWords(line))
+                    {
+                        string word = NormalizeWord(token);
+
+                        if (!IsValidWord(word))
+                            continue;
+
+                        int count;
+                        if (result.TryGetValue(word, out count))
+                            result[word] = count + 1;
+                        else
+                            result[word] = 1;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        static Dictionary<string, HashSet<int>> ResolveWordFormsByLemmas(
+            string lemmasFile,
+            Dictionary<string, int> targetWordForms)
+        {
+            var result = new Dictionary<string, HashSet<int>>(StringComparer.OrdinalIgnoreCase);
+
+            var settings = new XmlReaderSettings
+            {
+                IgnoreComments = true,
+                IgnoreWhitespace = true,
+                DtdProcessing = DtdProcessing.Ignore
+            };
+
+            using (var stream = File.OpenRead(lemmasFile))
+            using (var reader = XmlReader.Create(stream, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element &&
+                        reader.Name == "lemma")
+                    {
+                        ParseLemma(reader, targetWordForms, result);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        static void ParseLemma(
+            XmlReader reader,
+            Dictionary<string, int> targetWordForms,
+            Dictionary<string, HashSet<int>> result)
+        {
+            string lemmaIdText = reader.GetAttribute("id");
+
+            int lemmaId;
+            if (!int.TryParse(lemmaIdText, NumberStyles.Integer, CultureInfo.InvariantCulture, out lemmaId))
+                return;
+
+            if (reader.IsEmptyElement)
+                return;
+
+            int lemmaDepth = reader.Depth;
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.EndElement &&
+                    reader.Name == "lemma" &&
+                    reader.Depth == lemmaDepth)
+                {
+                    break;
+                }
+
+                if (reader.NodeType != XmlNodeType.Element)
+                    continue;
+
+                if (reader.Name == "l" || reader.Name == "f")
+                {
+                    string t = reader.GetAttribute("t");
+
+                    if (string.IsNullOrEmpty(t))
+                        continue;
+
+                    string wordForm = NormalizeWord(t);
+
+                    if (!targetWordForms.ContainsKey(wordForm))
+                        continue;
+
+                    HashSet<int> lemmaIds;
+                    if (!result.TryGetValue(wordForm, out lemmaIds))
+                    {
+                        lemmaIds = new HashSet<int>();
+                        result[wordForm] = lemmaIds;
+                    }
+
+                    lemmaIds.Add(lemmaId);
+                }
+            }
+        }
+
+        static List<ResultItem> BuildResults(
+            Dictionary<string, int> wordFormCounts,
+            Dictionary<string, HashSet<int>> wordFormToLemmaIds)
+        {
+            var result = new List<ResultItem>();
+
+            foreach (var pair in wordFormCounts)
+            {
+                string wordForm = pair.Key;
+                int count = pair.Value;
+
+                HashSet<int> lemmaIds;
+                if (!wordFormToLemmaIds.TryGetValue(wordForm, out lemmaIds))
+                    continue;
+
+                foreach (int lemmaId in lemmaIds)
+                {
+                    result.Add(new ResultItem
+                    {
+                        LemmaId = lemmaId,
+                        WordForm = wordForm,
+                        Count = count
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        static void WriteOutput(string outputFile, List<ResultItem> results)
+        {
+            using (var writer = new StreamWriter(outputFile, false, Encoding.UTF8))
+            {
+                foreach (var item in results
+                    .OrderByDescending(x => x.Count)
+                    .ThenBy(x => x.WordForm, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.LemmaId))
+                {
+                    writer.Write(item.LemmaId);
+                    writer.Write("|");
+                    writer.Write(item.WordForm);
+                    writer.Write("|");
+                    writer.WriteLine(item.Count);
+                }
+            }
+        }
+
+        static IEnumerable<string> ExtractWords(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                yield break;
+
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char ch = line[i];
+
+                if (char.IsLetter(ch) || ch == 'Ё' || ch == 'ё')
+                {
+                    sb.Append(ch);
+                }
+                else
+                {
+                    if (sb.Length > 0)
+                    {
+                        yield return sb.ToString();
+                        sb.Clear();
+                    }
+                }
+            }
+
+            if (sb.Length > 0)
+                yield return sb.ToString();
+        }
+
+        static bool IsValidWord(string word)
+        {
+            if (string.IsNullOrWhiteSpace(word))
+                return false;
+
+            if (word.Length < 2)
+                return false;
+
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (!char.IsLetter(word[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        static string NormalizeWord(string word)
+        {
+            if (string.IsNullOrEmpty(word))
+                return string.Empty;
+
+            return word.Trim()
+                       .ToLowerInvariant()
+                       .Replace('ё', 'е');
+        }
+    }
+
+    class ResultItem
+    {
+        public int LemmaId { get; set; }
+        public string WordForm { get; set; }
+        public int Count { get; set; }
+    }
+}
