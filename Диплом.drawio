@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" version="29.6.6">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36">
   <diagram name="Страница — 1" id="qjxpPi4l0cBHCQ2LMtAn">
-    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2357" dy="2477" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -10,16 +10,11 @@
         <mxCell id="5ReSvTcZoD6zs8q2wylf-2" parent="1" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;" value="" vertex="1">
           <mxGeometry height="35" width="180" x="625" y="370" as="geometry" />
         </mxCell>
-        <mxCell id="5ReSvTcZoD6zs8q2wylf-3" parent="5ReSvTcZoD6zs8q2wylf-2" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;editable=1;overflow=hidden;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="35" width="30" as="geometry">
-            <mxRectangle height="35" width="30" as="alternateBounds" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="5ReSvTcZoD6zs8q2wylf-4" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;word_form&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;id_word&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;lemma_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;word (char, 70)&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="90.5" width="143" x="907" y="229.5" as="geometry" />
+          <mxGeometry height="90.5" width="142" x="905" y="232" as="geometry" />
         </mxCell>
-        <mxCell id="5ReSvTcZoD6zs8q2wylf-5" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;lemma&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;lemma_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;lemma (char, 40)&lt;br&gt;part_of_speech (char, 4)&lt;br&gt;can_bought_flag (bool)&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="107.5" width="177" x="670" y="248.5" as="geometry" />
+        <mxCell id="5ReSvTcZoD6zs8q2wylf-5" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;lemma&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;lemma_id (numc, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;lemma (char, 40)&lt;br&gt;part_of_speech (char, 4)&lt;br&gt;occurance_company (int, 6)&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="110.5" width="207" x="640" y="249.5" as="geometry" />
         </mxCell>
         <mxCell id="5ReSvTcZoD6zs8q2wylf-7" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-5" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=0.998;exitY=0.388;exitDx=0;exitDy=0;entryX=0.008;entryY=0.563;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" target="5ReSvTcZoD6zs8q2wylf-8" value="">
           <mxGeometry height="100" relative="1" width="100" as="geometry">
@@ -30,16 +25,16 @@
             <mxPoint x="905" y="438.75" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="5ReSvTcZoD6zs8q2wylf-8" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;word_form_special&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;id_word_e&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;lemma_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;word (char, 70)&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="80" width="135" x="905" y="354" as="geometry" />
+        <mxCell id="5ReSvTcZoD6zs8q2wylf-8" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;imageWidth=30;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;word_form_special&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;id_word_e&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;lemma_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;word (char, 70)&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="80" width="142" x="905" y="347.5" as="geometry" />
         </mxCell>
         <mxCell id="5ReSvTcZoD6zs8q2wylf-9" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;grammeme&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;id_grammem (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;text (char, 4)&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="77.5" width="153" x="897" y="460" as="geometry" />
+          <mxGeometry height="77.5" width="160" x="887" y="458.88" as="geometry" />
         </mxCell>
         <mxCell id="5ReSvTcZoD6zs8q2wylf-10" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;grammeme_per_wordform&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;uniqueId&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;word_id&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;grammem_id&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="90" width="170" x="1110" y="298" as="geometry" />
+          <mxGeometry height="90" width="170" x="1107" y="280" as="geometry" />
         </mxCell>
-        <mxCell id="5ReSvTcZoD6zs8q2wylf-11" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-4" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="5ReSvTcZoD6zs8q2wylf-10" value="">
+        <mxCell id="5ReSvTcZoD6zs8q2wylf-11" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-4" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="5ReSvTcZoD6zs8q2wylf-10" value="">
           <mxGeometry height="100" relative="1" width="100" as="geometry">
             <mxPoint x="1115" y="190" as="sourcePoint" />
             <mxPoint x="1215" y="90" as="targetPoint" />
@@ -56,14 +51,14 @@
             <mxPoint x="1445" y="364" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="5ReSvTcZoD6zs8q2wylf-13" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;gost_okpd2&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;standart_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;name (char, 200)&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="80" width="147" x="700" y="125" as="geometry" />
+        <mxCell id="5ReSvTcZoD6zs8q2wylf-13" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;standarts_lemmatized&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;standart_id (char, 20)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;name (char, 200)&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="80" width="147" x="900" y="114.5" as="geometry" />
         </mxCell>
         <mxCell id="5ReSvTcZoD6zs8q2wylf-14" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="что мы получаем из базы данных САПа?" vertex="1">
-          <mxGeometry height="30" width="250" x="270" y="268" as="geometry" />
+          <mxGeometry height="30" width="250" x="30" y="90" as="geometry" />
         </mxCell>
         <mxCell id="5ReSvTcZoD6zs8q2wylf-15" parent="1" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=wrap;verticalAlign=middle;overflow=hidden;" value="&lt;ol&gt;&lt;li&gt;Название материала&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;ГОСТ&lt;/span&gt;&lt;/li&gt;&lt;li&gt;ОКПД-2&lt;/li&gt;&lt;/ol&gt;" vertex="1">
-          <mxGeometry height="80" width="230" x="270" y="298" as="geometry" />
+          <mxGeometry height="80" width="230" x="20" y="169.5" as="geometry" />
         </mxCell>
         <mxCell id="_m-8qBBgiqHvGKGF7Eyj-3" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-5" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="5ReSvTcZoD6zs8q2wylf-4" value="">
           <mxGeometry height="100" relative="1" width="100" as="geometry">
@@ -72,27 +67,24 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="PBrPhjFRjwQuRcWXVpi5-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="С# + SQLite" vertex="1">
-          <mxGeometry height="30" width="150" x="240" y="160" as="geometry" />
+          <mxGeometry height="30" width="150" x="30" y="139.5" as="geometry" />
         </mxCell>
-        <mxCell id="IJRY71mBRueo_EBVe5vf-4" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Какие случаи у нас бывают?&lt;/h1&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;1. Слово нормально написано и на него найдена 1 лемма&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;2. Слово нормально написано, но на него найдено 2 леммы&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;3. Слово написано в сокращении, однако есть гост/окпд-2&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;4. Слово написано в сокращении, гост/окпд-2 не указаны&lt;br&gt;&lt;br&gt;&lt;/span&gt;&lt;/p&gt;" vertex="1">
+        <mxCell id="IJRY71mBRueo_EBVe5vf-4" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Какие случаи у нас бывают?&lt;/h1&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;1. Слово нормально написано и на него найдена 1 лемма&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;2. Слово нормально написано, но на него найдено 2 леммы&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;3. Слово написано в сокращении, есть гост/окпд-2&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;4. Слово написано в сокращении, гост/окпд-2 не указаны&lt;br&gt;&lt;br&gt;&lt;/span&gt;&lt;/p&gt;" vertex="1">
           <mxGeometry height="170" width="430" x="110" y="600" as="geometry" />
         </mxCell>
         <mxCell id="IJRY71mBRueo_EBVe5vf-5" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Как мы можем работать с контекстом?&lt;/h1&gt;&lt;p&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;1. Сравнивать частоту нахождения того или иного слова в частотном словаре&lt;/font&gt;&lt;/p&gt;&lt;p&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;2.&amp;nbsp;&lt;/font&gt;&lt;/p&gt;" vertex="1">
           <mxGeometry height="230" width="410" x="120" y="840" as="geometry" />
         </mxCell>
-        <mxCell id="IJRY71mBRueo_EBVe5vf-6" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fontColor=#000000;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;fillStyle=solid;direction=west;gradientDirection=north;gradientColor=#FFF2A1;shadow=1;size=0;pointerEvents=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Возможно мы можем вместо хранения лемматизированных названий сделать связь многие-ко-многим и таким образом хранить не длинные леммы, а их номера&lt;br&gt;&lt;br&gt;...а зачем нам вообще граммемы?&lt;/font&gt;" vertex="1">
-          <mxGeometry height="310" width="270" x="1220" y="520" as="geometry" />
+        <mxCell id="IJRY71mBRueo_EBVe5vf-7" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;wordforms_per_standart&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;uniqueId (numc, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;standart_id (char, 20)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;word_id&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="98" width="215" x="1107" y="101.5" as="geometry" />
         </mxCell>
-        <mxCell id="IJRY71mBRueo_EBVe5vf-7" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;lemmas_per_standart&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;lemmas_per_standart_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;standart_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;lemma_id (char, 8)&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="98" width="215" x="905" y="112" as="geometry" />
-        </mxCell>
-        <mxCell id="IJRY71mBRueo_EBVe5vf-10" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-5" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=0.999;exitY=0.131;exitDx=0;exitDy=0;entryX=0.008;entryY=0.618;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" target="IJRY71mBRueo_EBVe5vf-7" value="">
+        <mxCell id="IJRY71mBRueo_EBVe5vf-10" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-4" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" target="IJRY71mBRueo_EBVe5vf-7" value="">
           <mxGeometry height="100" relative="1" width="100" as="geometry">
             <Array as="points">
-              <mxPoint x="833" y="60" />
+              <mxPoint x="833" y="32.25" />
             </Array>
-            <mxPoint x="820" y="60" as="sourcePoint" />
-            <mxPoint x="880" y="169" as="targetPoint" />
+            <mxPoint x="1047" y="249.5" as="sourcePoint" />
+            <mxPoint x="1048.7199999999998" y="138.31400000000008" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="IJRY71mBRueo_EBVe5vf-11" edge="1" parent="1" source="5ReSvTcZoD6zs8q2wylf-13" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=0.991;exitY=0.377;exitDx=0;exitDy=0;entryX=-0.002;entryY=0.435;entryDx=0;entryDy=0;exitPerimeter=0;entryPerimeter=0;" target="IJRY71mBRueo_EBVe5vf-7" value="">
@@ -238,6 +230,45 @@
         </mxCell>
         <mxCell id="IJRY71mBRueo_EBVe5vf-62" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="А сколько вообще возможных комбинаций для названия материала существует? в каком порядке части речи могут идти? Может, распарсить для этого словарь лемм гостов и окпд-2?" vertex="1">
           <mxGeometry height="150" width="490" x="2070" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-1" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="5ReSvTcZoD6zs8q2wylf-13" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="960" y="-10" as="sourcePoint" />
+            <mxPoint x="1010" y="-60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-2" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.437;entryY=0.031;entryDx=0;entryDy=0;entryPerimeter=0;" target="IJRY71mBRueo_EBVe5vf-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="960" y="-10" as="sourcePoint" />
+            <mxPoint x="1060" y="-20" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Нужны нам для раскрытия сокращений" vertex="1">
+          <mxGeometry height="30" width="220" x="850" y="-40" as="geometry" />
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-5" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;grammatical_constructions&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;uniqueId&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;construction_id (int, 5)&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;part_of_speech&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="77.5" width="223" x="1030" y="568.13" as="geometry" />
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-6" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;grammatical_constructions_frequancy_company&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;id_construction (int, 5)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;frequancy (int, 7)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="58.75" width="313" x="640" y="577.5" as="geometry" />
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-11" edge="1" parent="1" source="T1FIN48DNY3jfTHLLe8r-6" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="T1FIN48DNY3jfTHLLe8r-5" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="865" y="797.5" as="sourcePoint" />
+            <mxPoint x="965" y="697.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-13" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;grammatical_constructions&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;uniqueId&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;FK&lt;/td&gt;&lt;td&gt;construction_id (int, 5)&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;part_of_speech&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="77.5" width="223" x="1030" y="675.63" as="geometry" />
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-14" parent="1" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" value="&lt;div style=&quot;box-sizing: border-box; width: 100%; background: rgb(228, 228, 228); padding: 2px;&quot;&gt;grammatical_constructions_frequancy_standarts&lt;/div&gt;&lt;table style=&quot;width:100%;font-size:1em;&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;PK&lt;/td&gt;&lt;td&gt;id_construction (int, 7)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;frequancy (int, 7)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;br&gt;&lt;/td&gt;&lt;td&gt;&lt;br&gt;&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="58.75" width="313" x="640" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="T1FIN48DNY3jfTHLLe8r-15" edge="1" parent="1" source="T1FIN48DNY3jfTHLLe8r-14" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="T1FIN48DNY3jfTHLLe8r-13" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="865" y="905" as="sourcePoint" />
+            <mxPoint x="965" y="805" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
